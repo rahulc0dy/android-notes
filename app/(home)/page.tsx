@@ -15,7 +15,7 @@ export default function HomePage() {
           </p>
           <Link
             href="/docs"
-            className="hover:bg-fd-primary hover:text-fd-primary-foreground text-white px-8 py-3 rounded-lg text-lg bg-fd-primary-foreground">
+            className="hover:bg-fd-primary hover:text-fd-primary-foreground text-white px-8 py-3 rounded-lg text-lg bg-fd-primary-foreground mt-5 transition-all">
             Go to docs
           </Link>
         </div>
