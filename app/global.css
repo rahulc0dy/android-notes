@@ -4,3 +4,7 @@
 @import "fumadocs-ui/css/catppuccin.css";
 
 @source '../node_modules/fumadocs-ui/dist/**/*.js';
+
+@theme {
+  --default-mono-font-family: var(--fira-code);
+}
