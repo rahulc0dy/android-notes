@@ -1,0 +1,510 @@
+---
+title: Android App Components
+description: Components that comprise and android app
+---
+
+Android apps are primarily made up of five different types of components:
+
+1. **Activities**: These are individual screens that a user can interact with. Any UI action like touching a button or swiping a screen will usually take place within an activity.
+
+2. **Services**: Unlike activities, services run in the background and don’t have a user interface. They’re used for repetitive or long running operations, like playing music or pulling in a feed of data from a server.
+
+3. **Broadcast Receivers**: These are event listeners. The Android operating system uses them to respond to system-wide events.
+4. **Content Providers**: They manage and share app data with other apps installed on the device. For security, data is not generally shared across apps.
+
+5. **Intents**: These serve as messages or commands to the Android system. They’re used to signal to the Android system that certain events have occurred.
+
+   ![[Android Hierarchy]]
+
+---
+
+# Activities
+
+`Activity` in Android is a crucial component that represents a single screen with a user interface. It is just like a window in a desktop application. Android apps are typically made up of one or more activities, each having its interface which allows user interaction. When an app is launched, an instance of `Activity` is created, starting the lifecycle of that app. Every activity has its own lifecycle (create, start, resume, pause, stop, destroy) that keeps the state of a user’s progress, and Android manages these states automatically. Activities can also have `Intent`, which allows them to interact with other components, such as starting another activity or getting a result from that activity.
+
+_A container for one or more screens of your app._
+`MainActiviry`: entry point of the app.
+
+![[Android Activity Lifecycle]]
+
+1. `onCreate()` - called when the activity is first created, followed by
+2. `onStart()` - when the activity becomes visible to the user.
+3. `onResume()` - executes when the user starts interacting with the application.
+4. `onPause()` - when the activity is no longer in focus but might be visible. Example is a when a dialog is shown.
+5. `onStop()` - invoked when the application is no longer visible to the user.
+6. `onDestroy()` - used when the activity is being completely removed from the memory.
+7. `onRestart()` - called after the system stops the activity and is about to start it again.
+
+The proper handling of these states ensures the efficient use of resources and a smooth user experience.
+
+## State Changes
+
+The activities can go through different states in their lifecycle, often due to user interaction or system interruption. The primary states of an Activity include `Created`, `Started`, `Resumed`, `Paused`, `Stopped`, `Restarted`, and `Destroyed`. The “Created” state occurs when an activity instance is being created. The “Started” state is when the activity is visible to the user, while “Resumed” is when the activity is interacting with the user. An activity is “Paused” when it loses focus but is partly visible, “Stopped” when it’s not visible, “Restarted” when the activity is about to be started, and “Destroyed” when the activity is finished or the system is temporarily destroying it.
+
+## Back Stack
+
+The **tasks backstack** in Android refers to the way Android manages and arranges tasks in a stack-like structure. Every task has a stack of activities, which is referred to as the task’s back stack. The activities are placed in the order they are opened. When a new activity is started, it is placed at the top of the stack and becomes the running activity, while the previous activity is paused and put into the back stack. When you press the back button, the current activity is destroyed and the activity at the top of the back stack becomes active again. Android defines how to navigate between tasks and activities using this back stack concept.
+
+![[Back Stack]]
+
+## Tasks
+
+Each task has it's own back stack. For example the browser is a task with it's own back stack. Now the user clicks on an instagram link which will open the instagram app that will have it's own back stack.
+
+Android remembers these tasks so as when the user clicks the back button, the correct screen can be shown.
+
+## Launch Modes
+
+### Standard
+
+This is the default launch mode of activity. If you don’t set any launch mode to your activity, it will use the standard mode **by default**. It creates a new instance of activity every time even if activity instance is already present.
+
+Suppose we have A, B, C, and D activities and your activity B has **standard** launch mode. Now again launching activity B
+
+State of Activity Stack before launch B
+
+A → B → C → D
+
+State of Activity Stack after launch B
+
+A → B → C → D → B
+
+We can see that new instance of B is created again.
+
+### Single Top
+
+If an instance of activity already exists at the top of the current task, a new instance will not be created and the Android system will route the intent information through `onNewIntent()`.  
+If an instance is not present on **top** of the task then a new instance will be created.
+
+Suppose we have A, B, C, and D activities. **A → B → C → D**
+
+If we launch C then a new instance of C will be created as **it is not on top**.  
+So it will look like A → B → C → D → C
+
+Now suppose we have A → B → C → D → C like this  
+then we if again launch C activity then in this case new instance will not be created. Instead, we will receive the callback on `onNewIntent()` method.
+
+### Single Task
+
+An activity declared with launch mode as **singleTask** can have **only one instance in the system** (singleton). At a time only one instance of activity will exist.
+
+If activity instance is not present then the new instance will be created and if the instance is already present in the system then the `onNewIntent()` method will receive the callback.
+
+Suppose we have A, B, C activities(**A → B → C )** and we are launching D that has a singleTask launch mode. In that case, the new instance of D will be created so the current state will look like this. (**A → B → C → D)**
+
+Now let suppose if we launch B that also have has a **singleTask** launch mode then current state will look like this.
+
+**A → B**
+
+Here old instance gets called and intent data route through `onNewIntent()` callback. Also, notice that **C and D activities get destroyed** here.
+
+### Single Instance
+
+It is similar to `singleTask` except that no other activities will be created in the same task. If another Activity is called from this kind of Activity, a new Task would be automatically created to place that new Activity.
+
+- Case 1:
+
+  Suppose you have A, B, and C activities(**A →B →C)** and your activity D has a **`singleInstance`** launch mode. In this case, if we launch D then D will be launch in the different task. New task for D will be created.
+
+  Task1: **A →B →C**
+
+  Task2 : D (**here D will be in the different task**)
+
+  Now if you continue this and start E and D then Stack will look like
+
+  Task1: **A →B →C →E**
+
+  Task2: D
+
+- Case 2:
+
+  Suppose you have A, B, C activities in **one task** (**A →B →C**)and activity D is in **another task** with launch mode **`singleInstance`**. In this case, if we launch D again then we will receive the callback in the `onNewIntent()` method of D activity.
+
+  Task1: **A →B →C**
+
+  Task2: D (**Here old instance gets called and intent data route through `onNewIntent()` callback**)
+
+## ViewModels
+
+### The Lifecycle of View Models
+
+The issue of configuration changes (like screen rotation). The activity gets destroyed and recreated during configuration changes, which typically results in loss of state if using standard object properties. By using Android’s architecture component `ViewModel`, which survives these configuration changes, the issues with state loss are resolved. This ensures user experience remains uninterrupted when the device’s configuration changes.
+![[MVVM]]
+View models transform data from one form to another, typically from a non usable form to a usable form in the UI.
+
+### Functions of View Models
+
+1. **Data Formatting**: Converting raw data from the Model into a format suitable for display in the UI (e.g., changing a Unix timestamp into a human-readable date).
+2. **UI Notifications**: The `ViewModel` notifies the UI of any data changes, ensuring the interface is always up-to-date.
+3. **Handling User Actions**: User interactions (like button clicks) are sent to the `ViewModel`, which processes them accordingly—updating states or interacting with the Model.
+
+### Implementing View Models
+
+1. **Using `ViewModel` Provider**: A method to ensure that a single instance of `ViewModel` is retained during configuration changes.
+2. **`ViewModel` Factory**: `ViewModels` require constructor parameters, it introduces a `ViewModel` Factory that allows for the creation of `ViewModel` instances with specific dependencies.
+
+> [!NOTE]
+> It is common to have one view model per activity.
+
+_ContactViewModal.kt_
+
+```kotlin ContactViewModel.kt
+class ContactsViewModel {
+	var backgroundColor by mytableStateOf(Color.White)
+		private set
+
+	fun changeBackgroundColor() {
+		backgroundColor = Color.Red
+	}
+}
+```
+
+---
+
+# Context
+
+Context functions as a bridge that allows an application to communicate with system components and other applications. Whenever an app requires access to system resources, databases, or preferences, it utilizes context to facilitate that connection. For example, to display static images or localized strings, access to the context is necessary. If an app needs to launch an activity or communicate with another application, context is also required. Essentially, context acts as an intermediary that provides the necessary connections and operations that your app needs to function correctly within Android.
+
+## Types of Context
+
+Context can be best understood as a superclass that has different subclasses, including `ContextWrapper`, Activities, Services, and Application instances. Each of these subclasses serves different purposes:
+
+- **Activities**: An instance of an activity can be treated as a context, which is active while the activity is running. When an activity is destroyed, the associated context is also released.
+- **Applications**: An application context, which is another subclass, persists as long as the application is running. It offers a broader scope of functionality compared to activity contexts as it does not have a lifecycle tied to a specific activity.
+
+Understanding the distinction between these contexts is critical, particularly in managing memory and lifecycle considerations during application development.
+
+## Memory Management with Context
+
+Context is essential for managing resources efficiently, but improper handling can lead to memory leaks. For instance, if a `ViewModel` maintains a reference to an Activity context, it can cause a memory leak because the `ViewModel` may outlive the activity lifecycle. In contrast, using an application context minimizes this risk due to its prolonged existence tied to the application’s lifecycle. Developers must be aware when storing context references to avoid these pitfalls, particularly in components with differing lifetimes, like `ViewModels`.
+
+## Usage Scenarios
+
+While application context is often safer, instances arise where an activity context is necessary—typically when soliciting permissions or accessing sensitive user data. Android permissions require the context of the current activity to present user dialogues appropriately. An application context in these scenarios would not suffice because it does not relate to the UI of the app.
+
+---
+
+# Resources
+
+Resources are android external resources that we can use in our apps. For example, images, videos and other assets are drawable resources.
+
+## Default Resource Folders
+
+By navigating to the `res` folder in Android Studio, developers can access the default resource directories, which include `drawable`, `mipmap`, and `values`.
+
+- **Drawable**: This folder is for visual elements, accepting both raster (PNG, JPEG) and vector (SVG) images, which Android converts into XML format for compatibility.
+- **Mipmap**: Primarily used for app launcher icons, providing different resolutions for better appearance across devices.
+- **Values**: Holds various types of resources like strings, colors, dimensions, and styles.
+- **Xml**: Used to store xml files for configs and other data storage.
+
+## Importing and Using Drawable Resources
+
+Developers can add images to the `drawable` folder by copying files directly. To reference a drawable in the code, the resource ID is utilized, which is linked to an integer representing that resource. This is achieved through `R`, where you ensure to import the correct package name.
+
+### Accessing Resources in Code
+
+To access resources, you must have a valid context. If you are inside an activity, you can directly use `resources.getDrawable()`, passing the ID of the drawable. However, caution is advised since this method can be deprecated; alternatives now call for themes to avoid deprecation warnings.
+
+### Functionality of Drawable Resources
+
+Once you retrieve the drawable, it can be manipulated or displayed through components like `ImageView` or `Jetpack Compose`, where a `painterResource` is used for easier integration.
+
+## Vector Graphics and Qualifiers in Android
+
+Vector graphics need to be imported as XML files since Android does not inherently read SVGs. They can be generated in Android Studio via `Vector Asset`. The video further explains the use of qualifiers—such as `v24`, indicating that the resource is available for devices running API level 24 and above. Qualifiers allow for multiple resource variants targeting specific configurations, streamlining resource management without code conditionals.
+
+### Creating Conditional Resources
+
+To ensure that specific resources are loaded based on device conditions (like API level or screen size), developers use qualifiers. This feature enables seamless resource handling, where different resources can be specified for night mode, screen sizes, or country codes.
+
+## Mipmap and Values Folders
+
+The `mipmap` folder is crucial for adapting icons across varying screen resolutions. It ensures that devices with different capabilities use the appropriately sized icons.  
+The `values` folder consolidates styles, themes, strings, and colors. Developers can define color constants for different themes—light and dark—ensuring aesthetic coherence across device modes.
+
+### Managing Strings and Localizations
+
+Strings are critical in providing user interface text across different languages. Developers can create different resource files for specific locales, ensuring users receive the correct text based on their language preferences.
+
+---
+
+# Services
+
+A service is an application component that can perform long-running operations in the background without a user interface. Services are ideal for tasks such as playing music, handling network transactions, or processing data even when the app’s UI isn’t visible.
+
+### Types of Services in Modern Android
+
+1. **Foreground Services:**
+
+   - **Purpose:** These services perform operations that are noticeable to the user (for example, playing music or navigation) and must display a persistent notification.
+
+   - **Modern Considerations:** With tighter background restrictions in recent Android versions, foreground services are the recommended way to perform continuous tasks, ensuring that the system keeps them running while also informing the user.
+
+2. **Background Services (with Limitations):**
+
+   - **Purpose:** Used for tasks that don’t need direct user awareness.
+
+   - **Modern Considerations:** Recent Android releases impose significant restrictions on background execution. Developers now need to carefully consider battery and resource optimization, often opting for alternatives such as WorkManager for deferrable tasks.
+
+3. **Bound Services:**
+
+   - **Purpose:** Allow client components (like activities or view models) to bind to the service, interact with it, and even receive callbacks.
+
+   - **Modern Considerations:** In today’s architecture, it’s common to delegate the binding logic to a ViewModel or Repository so that UI components (including those built with Jetpack Compose) remain decoupled from the service’s direct lifecycle. This approach leverages lifecycle-aware components to ensure proper cleanup and resource management.
+
+### Service Lifecycle in the Modern Era
+
+Even with the shift to Jetpack Compose for UI, the service lifecycle is still managed by the Android system using a set of callback methods. Here’s an overview:
+
+- **onCreate():**  
+   Initialize resources when the service is first created.
+- **onStartCommand():**  
+   Called each time a client starts the service via `startService()` (or `startForegroundService()` for foreground services). In modern apps, you’ll often return flags like `START_NOT_STICKY` to avoid unintended restarts, aligning with battery and performance guidelines.
+- **onBind():**  
+   When a client binds to a service, this method returns an `IBinder` interface for communication. Modern implementations often encapsulate this binding logic inside a repository or ViewModel to keep UI code (now using Jetpack Compose) clean.
+- **onDestroy():**  
+   Clean up resources and gracefully shut down operations when the service is no longer needed.
+
+### Integrating Services with Modern UI (Jetpack Compose)
+
+While services themselves are independent of the UI toolkit, modern best practices encourage separating concerns by:
+
+- **Leveraging ViewModels:**  
+   Instead of directly binding services within composable functions, bind your service in a ViewModel or repository. The ViewModel can expose LiveData or StateFlow objects representing service data. Composables built with Jetpack Compose can then observe these state changes without needing to handle the service connection directly.
+- **Lifecycle Awareness:**  
+   Use Jetpack libraries like Lifecycle and Compose’s side-effect APIs (e.g., `DisposableEffect`) to ensure that any interaction with services occurs in sync with the UI lifecycle. This prevents memory leaks or orphaned service connections.
+- **Using WorkManager for Deferred Tasks:**  
+   For tasks that need to run reliably in the background (and may need to survive process death), modern apps often prefer WorkManager over traditional background services. WorkManager integrates with the modern app architecture and supports Compose-based UIs indirectly by updating state through ViewModels.
+
+### Modern Best Practices
+
+- **Decouple UI and Service Logic:**  
+   Since Jetpack Compose focuses on UI, keep business logic and service interactions in non-UI layers. This decoupling allows you to update your UI reactively without getting entangled in service lifecycle management.
+- **Foreground Services for User-Centric Tasks:**  
+   When your app requires uninterrupted operation (like media playback or navigation), implement foreground services that comply with the latest Android background execution limits.
+- **Opt for Reactive and Lifecycle-Aware Patterns:**  
+   Integrate services with reactive state containers (`LiveData`, `StateFlow`) and ensure that any binding or unbinding occurs in response to lifecycle events, following modern Android guidelines.
+
+---
+
+# Work Manager
+
+While foreground services keep tasks visible to users, Work Manager handles background operations that don’t require direct user awareness. This is essential for tasks that must reliably execute even if the app is not visible, such as data synchronization or image uploads.
+
+## Work Manager Overview
+
+- Work Manager is used for tasks that the user does not need to monitor, providing a reliable execution environment.
+- Examples include synchronizing data every 30 minutes or performing one-time tasks with tasks that could take time, like uploading images.
+- If an app using foreground services is closed by the user before a task is finished, the task will not complete. Work Manager guarantees that tasks will execute.
+
+## Live Use Case: Compressing Images
+
+In this section, the tutorial focuses on a practical implementation where:
+
+- Users can share images from Google Chrome to the Work Manager app.
+- Images may need to be compressed to fit specific size requirements, which involves uncertain iterations of quality adjustments and checks.
+
+### Steps:
+
+1. **Setting up the Android Project**:
+
+   - Adding necessary dependencies to the `build.gradle` file for Work Manager and image handling libraries.
+
+2. **Defining Intent Filters**:
+
+   - Necessary to accept image data shared from other applications. This involves modifying the app’s manifest file.
+
+3. **Creating a Worker Class**:
+
+   - The `PhotoCompressionWorker` class is introduced, utilizing Kotlin’s coroutine capabilities to handle asynchronous image compression tasks.
+   - Within this class, the `doWork()` function will execute the image processing operations reliably.
+
+4. **Handling File Input/Output**:
+
+   - Retrieving the shared image URI, converting it to byte arrays, and checking for valid inputs before processing.
+
+5. **Bitmap Compression Logic**:
+
+   - Implementing the logic to compress images while maintaining target quality.
+   - A loop iterates on image quality until the desired file size is achieved or quality becomes too low.
+
+6. **Saving Compressed Images**:
+
+   - After processing, the resulting files are stored in the app’s cache directory and can be accessed later.
+
+## Executing the Work Request
+
+- The video covers how to trigger the worker within the app’s activity, overriding the `onNewIntent()` method to respond to the shared image.
+- Specifies how to create a one-time work request with input data parameters and conditions for execution, such as requiring an internet connection.
+
+### Observing Work Results
+
+- Utilizing `LiveData` in conjunction with Work Manager allows the app to reactively update images in the UI when background processing is complete.
+- Code snippets demonstrate how to retrieve the output data, such as the file paths of the processed images once the compression work is done.
+
+---
+
+# Broadcast Receivers
+
+Unlike intents directed at a single app, broadcasts are system-wide messages that can potentially reach multiple apps. Broadcasts allow applications to respond to events generated both by the Android system and by other applications, enabling them to react to significant system-wide changes, such as the completion of a device boot.
+
+## Registering Broadcast Receivers
+
+To handle broadcasts, applications must register a Broadcast Receiver, which is a component that listens for specific broadcasts. When an event occurs, like the completion of a device boot, the system sends out a broadcast that registered receivers can listen for and respond accordingly. A practical example is handling incoming calls. For instance, a music player app can pause playback when it receives a notification that a call is incoming.
+
+## Responding to Broadcasts: Airplane Mode Example
+
+The video provides a detailed example of how to respond to broadcasts triggered by changes in airplane mode. It describes creating a class called `AirplaneModeReceiver`, which extends `BroadcastReceiver`. The essence of this implementation is to override the `onReceive` method that activates upon receiving the specified broadcast. The receiver checks if the airplane mode status changes and can react accordingly, such as by printing a log statement that indicates whether airplane mode is enabled or not.
+
+The video emphasizes checking the intent action using `Intent.ACTION_AIRPLANE_MODE_CHANGED` to ensure the receiver correctly processes the intended broadcast. The host then illustrates how to register the receiver in the main activity’s `onCreate()` method and unregister it in `onDestroy()` to avoid memory leaks and unnecessary resource usage.
+
+## Types of Broadcast Receivers: Dynamic vs. Static
+
+The discussion transitions into differences between dynamic and static broadcast receivers. A dynamic receiver is registered and unregistered during the application’s lifecycle, meaning it only functions when the app is active. This limits its capacity to receive broadcasts when the app is closed.
+
+In contrast, static receivers remain registered in the application’s manifest and can respond to broadcasts even when the app is not running. The video highlights the constraints surrounding static receivers due to potential battery drain, allowing only specific broadcasts—like boot completion.
+
+## Sending Broadcasts Between Apps
+
+The latter section of the video shifts focus to sending broadcasts. The host demonstrates how one app can communicate with another through a broadcast. By creating a button that, when clicked, sends a custom broadcast to another app using `sendBroadcast()`, the concept of inter-app communication is exemplified.
+
+The recipient app must be configured to receive such broadcasts by registering its own receiver. This segment illustrates registering a test receiver, which checks for the specific action and logs a message confirming receipt of the broadcast.
+
+The host reinforces that while inter-app communication is effective, dynamic receivers require the receiving app to be active. However, broadcasts specifying a targeted app via a package name can be received regardless of the receiving app’s state.
+
+---
+
+# URIs
+
+A URI is a string of characters used to identify a resource either locally (such as content from a content provider) or on the web. In Android, URIs typically follow a structure like:
+
+```
+scheme://authority/path?query
+```
+
+- **Scheme:** Indicates the protocol (e.g., `http`, `https`, `content`, or even a custom scheme for deep links).
+- **Authority:** Identifies the host or provider.
+- **Path:** Specifies the location of the resource.
+- **Query Parameters:** Provide additional data.
+
+This structure allows Android to locate and reference resources consistently across the system.
+
+### URIs in Android Development
+
+In traditional Android development, URIs are used in several key areas:
+
+- **Deep Linking:** To navigate directly to a specific screen or piece of content in an app.
+- **Content Providers:** To access or share data between apps.
+- **Resource Identification:** For fetching images, documents, or other media (often via libraries like Coil).
+
+Even with Jetpack Compose, these core uses remain—URIs continue to be your way of uniquely identifying and accessing resources.
+
+### Deep Linking with Jetpack Compose
+
+With Jetpack Compose, the Navigation component has been redesigned to work seamlessly in a declarative paradigm. Deep links in Navigation Compose rely on URIs to route users to a specific destination within your app. Here’s how this works:
+
+- **Defining a Deep Link:** When setting up your `NavGraph`, you can add a deep link to a composable destination using a URI pattern. For example:
+
+  ```kotlin
+  NavHost(navController = navController, startDestination = "home") {
+      composable(         route = "profile/{userId}",         deepLinks =
+      listOf(navDeepLink { uriPattern = "myapp://profile/{userId}" })     ) {
+      backStackEntry ->         val userId =
+      backStackEntry.arguments?.getString("userId")
+      ProfileScreen(userId = userId)     } }
+  ```
+
+  In this snippet:
+
+  - The deep link uses a custom scheme (`myapp://`) to trigger navigation.
+  - The `{userId}` placeholder in the URI allows you to pass parameters directly via the URI.
+
+- **Handling External Links:** When a user clicks on a link that matches your URI pattern (from a web browser, email, etc.), Android can launch your app and navigate directly to the intended screen, making your app more accessible and integrated.
+
+_This approach ensures that even though your UI is built with Compose, you’re still leveraging the power of URIs for navigation and deep linking._
+
+### Working with Content URIs in Compose
+
+While deep linking is a common use case, URIs are also frequently encountered when loading content. For example:
+
+- **Image Loading:** Libraries like Coil are designed for Jetpack Compose and use URIs (or URL strings) to load images asynchronously.
+
+      ```kotlin
+      Image(
+      	painter = rememberImagePainter(data =
+      	content://media/external/images/media/12345"),
+      	contentDescription = "Loaded from a content URI"
+      )
+      ```
+
+  Here, a content URI is passed to Coil, which then fetches and displays the image—all within a composable.
+
+### Integrating URIs with State and Navigation
+
+In a modern Compose-based app, you’ll typically:
+
+- **Parse URIs:** Use functions like `Uri.parse()` to convert a URI string into a `Uri` object that can be manipulated or queried.
+
+- **Extract Parameters:** When handling deep links, extract variables (like user IDs) from the URI and pass them to your composables.
+
+- **Update Navigation State:** Combine URI-based navigation with state management (using `ViewModels` and state flows) to update your UI reactively when a deep link is triggered.
+
+This integration ensures that your app can handle both external URI-based navigation and internal resource referencing in a consistent, declarative way.
+
+---
+
+# Content Providers
+
+Content providers serve as a mechanism for applications to share data. The video broadly categorizes popular content providers like the Android contact list, calendar, and media store, explaining that these APIs expose data in a manner akin to databases. This allows developers to access user-specific resources without needing to recreate the data structure in their applications.
+
+## Examples of Content Providers
+
+1. **Contact List App**: Developers must incorporate existing user contacts to facilitate easy transition for users from an old app without re-entry. The existing contact list app exposes a content provider that allows developers flexible access to user’s contact data.
+
+2. **Calendar App**: Similar to the contact list, a calendar app can leverage a content provider to access shared calendar events saved on the device.
+
+3. **Media Store**: This is one of the most widely used content providers that lets applications access various media files, including images, videos, and audio, thus enabling developers to query through the content significantly.
+
+## Accessing Content Providers
+
+To access data from a content provider, developers utilize the content resolver in their application. The video shows a practical example involving the media store where the goal is to query and display images from a user’s gallery. Developers are guided through accessing images by specifying the URI, defining projections (which columns of data to return), and implementing filters via the selection and selection arguments.
+
+### Querying Images
+
+The structured method involves defining different parameters like projections—similarly to SQL database operations—to fetch specified data fields like image IDs and names. The video elaborates how users can filter these results based on conditions such as the date the image was taken.
+
+### Cursor Object
+
+Upon executing the query, developers work with a cursor to navigate through the returned dataset, iterating through image data while converting them into a manageable format for display in the application.
+
+## Permissions
+
+Accessing user data requires permissions. The video highlights how necessary permissions, like reading media images or calendar events, must be declared in the project’s manifest. Furthermore, permission requests must be managed appropriately, ensuring that users grant access to their data.
+
+## Creating Custom Content Providers
+
+While utilizing built-in content providers suffices for many projects, developers may create a custom content provider if their apps contain unique data sets that other applications may want to access. The video introduces creating a simple custom content provider derived from the content provider class, explaining the essential functions that need implementation, such as querying and inserting content.
+
+## Implementation Summary
+
+- Implement the required functions in the custom content provider;
+- Manage how data is structured and accessed via SQL queries;
+- Declare the provider in the application manifest for proper registration.
+
+---
+
+# Intents
+
+Intent in Android is a software mechanism used for late runtime binding between components, such as activities, content providers, and services. It is essentially a passive data structure holding an abstract description of an operation that the Android system is requested to perform.
+
+## Implicit Intents
+
+**Implicit Intents** do not specify the target component explicitly like Explicit Intents. Instead, they allow the system to find a suitable component matching the Intent description to handle the request. The system will find an activity that can handle this intent by comparing the `<intent-filter>` section in the `AndroidManifest.xml` of all apps installed on the device against the Implicit Intent.
+
+## Explicit Intents
+
+**Explicit Intents** are primarily used within an application’s own boundaries. In explicit intents you specify the component that needs to be responded to the intent. Therefore, the target component must be specified by calling methods such as `setComponent(ComponentName)`, `setClass(Context, Class)`, or `setClassName(String, String)`. This means that explicit intents are typically used for launching activities, broadcasting messages, starting services within the app. Explicit intents are not resolved by the system but are passed to the component identified in the intent.
+
+## Intent Filters
+
+**Intent Filters** in Android are essential components of the Android system where you can declare the capabilities of your activities, services, and broadcast receivers. An intent filter is an expression found in your app’s manifest file, defined in the `<intent-filter>` XML element. Android uses these filters to determine the appropriate components for incoming intents, which can be either explicit or implicit. Your app’s ability to respond to intents depends on the filters you define. The filters are set of conditions comprised of `action`, `category`, and `data` which your activity or service is able to perform. If the incoming `Intent` matches with defined `Intent Filters`, Android system will permit that `Intent` to your Component (Activity, Service, or Broadcast Receiver).

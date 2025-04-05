@@ -1,0 +1,1754 @@
+---
+title: Kotlin Notes
+description: Kotlin fundamentals for android development
+---
+
+# Basic Types
+
+| **Category**           | **Basic types**                    | **Example code**                                              |
+| ---------------------- | ---------------------------------- | ------------------------------------------------------------- |
+| Integers               | `Byte`, `Short`, `Int`, `Long`     | `val year: Int = 2020`                                        |
+| Unsigned integers      | `UByte`, `UShort`, `UInt`, `ULong` | `val score: UInt = 100u`                                      |
+| Floating-point numbers | `Float`, `Double`                  | `val currentTemp: Float = 24.5f`, `val price: Double = 19.99` |
+| Booleans               | `Boolean`                          | `val isEnabled: Boolean = true`                               |
+| Characters             | `Char`                             | `val separator: Char = ','`                                   |
+| Strings                | `String`                           | `val message: String = "Hello, world!"`                       |
+
+> _Types can be inferred by the compiler when possible._
+
+Kotlin is a statically typed language, meaning that the type of every expression is known at compile time. This ensures type safety and allows for features like type inference, where the compiler can deduce the type of a variable based on its initializer.
+
+In Kotlin, everything is an object in the sense that you can call member functions and properties on any variable. While certain types have optimized internal representations, they all appear and behave like regular classes to the programmer.
+
+## Basic Types
+
+### 1. Numbers
+
+- **Integers**:
+  - `Byte`: 8-bit signed integer, range: -128 to 127.
+  - `Short`: 16-bit signed integer, range: -32,768 to 32,767.
+  - `Int`: 32-bit signed integer, range: -2^31 to 2^31-1.
+  - `Long`: 64-bit signed integer, range: -2^63 to 2^63-1.
+- **Floating-point numbers**:
+  - `Float`: 32-bit IEEE 754 floating-point number.
+  - `Double`: 64-bit IEEE 754 floating-point number.
+
+Example:
+
+```kotlin
+val byteNumber: Byte = 100
+val intNumber: Int = 1000
+val doubleNumber: Double = 100.99
+```
+
+Note: Unlike Java, implicit conversion between numeric types is not supported in Kotlin; explicit conversion methods like `toByte()`, `toInt()`, etc., are used.
+
+### 2. Characters
+
+The `Char` type represents a single character and is defined using single quotes:
+
+```kotlin
+val letter: Char = 'A'
+```
+
+### 3. Booleans
+
+The `Boolean` type has two possible values: `true` and `false`.
+
+```kotlin
+val isKotlinFun: Boolean = true
+```
+
+### 4. Strings
+
+Strings are sequences of characters enclosed in double quotes:
+
+```kotlin
+val greeting: String = "Hello, Kotlin!"
+```
+
+### 5. Arrays
+
+Arrays in Kotlin are represented by the `Array` class, and they can be created using the `arrayOf()` function or the `Array` constructor:
+
+```kotlin
+val numbers = arrayOf(1, 2, 3, 4, 5)
+```
+
+## Creating Custom Types in Kotlin
+
+Kotlin allows developers to define custom types using classes, data classes, type aliases, and sealed classes.
+
+### 1. Classes
+
+Classes are the primary means of creating custom types in Kotlin.
+
+```kotlin
+class Person(val name: String, var age: Int) {
+    fun greet() {
+        println("Hello, my name is $name.")
+    }
+}
+```
+
+Here, `Person` is a custom type with properties `name` and `age`, and a method `greet()`.
+
+### 2. Data Classes
+
+For classes that are primarily used to hold data, Kotlin provides a concise way to create them using the `data` keyword:
+
+```kotlin
+data class User(val username: String, val email: String)
+```
+
+Data classes automatically generate useful methods like `toString()`, `equals()`, and `hashCode()`.
+
+### 3. Type Aliases
+
+Type aliases provide alternative names for existing types, making code more readable:
+
+```kotlin
+typealias Email = String
+
+fun sendEmail(email: Email) {
+    // ...
+}
+```
+
+In this example, `Email` is a type alias for `String`, clarifying the purpose of the parameter.
+
+### 4. Sealed Classes
+
+Sealed classes are used to represent restricted class hierarchies, where a value can have one of the types from a limited set:
+
+```kotlin
+sealed class Result
+data class Success(val data: String) : Result()
+data class Error(val exception: Throwable) : Result()
+```
+
+Sealed classes are useful for representing states with a fixed number of subclasses.
+
+By leveraging these features, you can create robust and expressive custom types in Kotlin, enhancing code clarity and maintainability.
+
+---
+
+# Operators
+
+In Kotlin, **operators** are special symbols or keywords that perform operations on variables and values, known as operands. For example, in the expression `a + b`, `+` is the operator that adds `a` and `b`. Kotlin provides a rich set of operators, and also allows developers to define custom implementations for existing operators through **operator overloading**.
+
+### 1. Arithmetic Operators
+
+- `+` : Addition
+- `-` : Subtraction
+- `*` : Multiplication
+- `/` : Division
+- `%` : Modulus (remainder)
+
+**Example:**
+
+```kotlin
+val a = 10
+val b = 3
+
+val sum = a + b        // 13
+val difference = a - b // 7
+val product = a * b    // 30
+val quotient = a / b   // 3
+val remainder = a % b  // 1
+```
+
+Note: In integer division, the result is an integer. To obtain a precise result, ensure one of the operands is a floating-point number.
+
+**Floating-point Division Example:**
+
+```kotlin
+val a = 10
+val b = 3
+
+val preciseQuotient = a.toDouble() / b // 3.3333...
+```
+
+### 2. Assignment Operators
+
+These operators are used to assign values to variables, often combining an arithmetic operation with assignment:
+
+- `=` : Simple assignment
+- `+=` : Addition and assignment
+- `-=` : Subtraction and assignment
+- `*=` : Multiplication and assignment
+- `/=` : Division and assignment
+- `%=` : Modulus and assignment
+
+**Example:**
+
+```kotlin
+var number = 10
+
+number += 5  // number = number + 5; now number is 15
+number -= 3  // number = number - 3; now number is 12
+number *= 2  // number = number * 2; now number is 24
+number /= 4  // number = number / 4; now number is 6
+number %= 5  // number = number % 5; now number is 1
+```
+
+### 3. Comparison Operators
+
+These operators compare two values and return a Boolean result (`true` or `false`):
+
+- `==` : Equal to
+- `!=` : Not equal to
+- `>` : Greater than
+- `<` : Less than
+- `>=` : Greater than or equal to
+- `<=` : Less than or equal to
+
+**Example:**
+
+```kotlin
+val x = 5
+val y = 10
+
+val isEqual = x == y        // false
+val isNotEqual = x != y     // true
+val isGreater = x > y       // false
+val isLess = x < y          // true
+val isGreaterOrEqual = x >= y // false
+val isLessOrEqual = x <= y    // true
+```
+
+### 4. Logical Operators
+
+These operators are used to combine multiple Boolean expressions:
+
+- `&&` : Logical AND (returns `true` if both expressions are true)
+- `||` : Logical OR (returns `true` if at least one expression is true)
+- `!` : Logical NOT (inverts the Boolean value)
+
+**Example:**
+
+```kotlin
+val a = true
+val b = false
+
+val andResult = a && b  // false
+val orResult = a || b   // true
+val notResult = !a      // false
+```
+
+### 5. Bitwise Operators
+
+Kotlin provides bitwise operators only for integer types, and they are represented by named functions:
+
+- `shl(bits)` : Signed shift left (equivalent to Java's `<<`)
+- `shr(bits)` : Signed shift right (equivalent to Java's `>>`)
+- `ushr(bits)` : Unsigned shift right (equivalent to Java's `>>>`)
+- `and(bits)` : Bitwise AND
+- `or(bits)` : Bitwise OR
+- `xor(bits)` : Bitwise XOR
+- `inv()` : Bitwise inversion
+
+**Example:**
+
+```kotlin
+val x = 4 // 0100 in binary
+val y = 2 // 0010 in binary
+
+val andResult = x and y   // 0000 (0 in decimal)
+val orResult = x or y     // 0110 (6 in decimal)
+val xorResult = x xor y   // 0110 (6 in decimal)
+val invResult = x.inv()   // Inverts all bits
+val shiftLeft = x shl 1   // 1000 (8 in decimal)
+val shiftRight = x shr 1  // 0010 (2 in decimal)
+```
+
+### 6. Unary Operators
+
+These operators operate on a single operand:
+
+- `+` : Unary plus (indicates a positive value; usually redundant)
+- `-` : Unary minus (negates a value)
+- `++` : Increment (increases a value by 1)
+- `--` : Decrement (decreases a value by 1)
+- `!` : Logical NOT
+
+**Example:**
+
+```kotlin
+var number = 5
+
+val positive = +number   // 5
+val negative = -number   // -5
+
+number++                 // number is now 6
+number--                 // number is now 5 again
+```
+
+### 7. Range Operators
+
+Kotlin provides the `..` operator to create ranges:
+
+- `..` : Creates a range from the start value to the end value (inclusive)
+
+**Example:**
+
+```kotlin
+val range = 1..5 // Creates a range of numbers from 1 to 5
+```
+
+You can use ranges in loops:
+
+```kotlin
+for (i in 1..5) {
+    println(i) // Prints numbers from 1 to 5
+}
+```
+
+---
+
+# Variables
+
+Kotlin provides two primary keywords for declaring variables: `var` and `val`. The choice between them depends on the mutability of the variable—that is, whether the variable's value can be changed after its initial assignment.
+
+### 1. Mutable Variables (`var`)
+
+Variables declared with the `var` keyword are **mutable**, meaning their values can be reassigned after initialization. This is useful when you need a variable whose value may change during the execution of the program.
+
+**Syntax:**
+
+```kotlin
+var variableName = initialValue
+```
+
+**Example:**
+
+```kotlin
+var count = 10
+println(count) // Output: 10
+
+count = 15
+println(count) // Output: 15
+```
+
+In this example, `count` is initially set to `10`. Later, its value is changed to `15`, demonstrating the mutability of `var` variables.
+
+### 2. Immutable Variables (`val`)
+
+Variables declared with the `val` keyword are **immutable**, meaning once they are assigned a value, it cannot be changed. This is akin to declaring a variable as `final` in Java. Immutable variables are particularly useful for defining constants or values that should remain constant throughout the program.
+
+**Syntax:**
+
+```kotlin
+val variableName = initialValue
+```
+
+**Example:**
+
+```kotlin
+val pi = 3.14159
+println(pi) // Output: 3.14159
+
+// Attempting to reassign pi will result in a compilation error
+// pi = 3.14 // Error: Val cannot be reassigned
+```
+
+Here, `pi` is assigned the value `3.14159` and cannot be reassigned, ensuring its value remains constant.
+
+## Type Inference and Explicit Typing
+
+Kotlin features **type inference**, allowing the compiler to deduce the type of a variable from its initializer. This means you can often omit explicit type declarations, making the code more concise.
+
+**Example with Type Inference:**
+
+```kotlin
+var language = "Kotlin" // The compiler infers that 'language' is of type String
+val year = 2025         // The compiler infers that 'year' is of type Int
+```
+
+However, you can explicitly specify the type of a variable if desired, which can enhance code readability and maintainability.
+
+**Example with Explicit Typing:**
+
+```kotlin
+var language: String = "Kotlin"
+val year: Int = 2025
+```
+
+Explicit typing is particularly useful when declaring variables without immediately initializing them.
+
+**Example:**
+
+```kotlin
+var username: String
+// Some operations
+username = "Alice"
+```
+
+In this case, specifying the type `String` for `username` clarifies its intended use before it is assigned a value.
+
+## Best Practices for Using `var` and `val`
+
+- **Prefer `val` over `var`:** Whenever possible, use `val` to declare variables. This practice promotes immutability, leading to safer and more predictable code. Immutable variables help prevent unintended side effects and make the code easier to reason about.
+- **Use `var` when mutability is required:** If a variable's value needs to change during the program's execution, declare it with `var`. Ensure that mutability is necessary and that the variable's changing state is well-managed to avoid potential bugs.
+
+By thoughtfully choosing between `var` and `val`, we can write Kotlin code that is both robust and maintainable.
+
+---
+
+# Built in Data Structures
+
+There are many useful data structures in kotlin. The most important and used ones are:
+
+## 1. Arrays
+
+Arrays in Kotlin are **fixed‑size**, ordered containers. There are two flavors:
+
+1. **Generic `Array<T>`** (backed by `java.lang.Object[]`)
+2. **Primitive arrays** (`IntArray`, `DoubleArray`, etc.) optimized to avoid boxing.
+
+### Creation
+
+```kotlin
+// Generic array
+val a1: Array<String> = arrayOf("A", "B", "C")
+// Primitive arrays
+val ints: IntArray    = intArrayOf(1, 2, 3)
+val zeros: IntArray   = IntArray(5)            // [0,0,0,0,0]
+val doubles: DoubleArray = DoubleArray(3) { it * 2.5 }  // [0.0, 2.5, 5.0]
+```
+
+### Access & Mutation
+
+```kotlin
+val arr = arrayOf("x","y","z")
+println(arr[1])   // y
+arr[2] = "w"      // mutate
+```
+
+### Utilities
+
+- `size`, `indices`
+- Copying: `copyOf()`, `copyOfRange(1..3)`
+- Conversion: `toList()`, `toTypedArray()`
+- Iteration: `for (e in arr)`, `for ((i,e) in arr.withIndex())`
+
+## 2. Lists
+
+Kotlin distinguishes **read‑only** and **mutable** collections via separate interfaces:
+
+| Interface | Mutable counterpart |
+| --------- | ------------------- |
+| `List<T>` | `MutableList<T>`    |
+
+### Creation
+
+```kotlin
+val readOnly: List<Int>       = listOf(1,2,3)
+val writable: MutableList<Int> = mutableListOf(1,2,3)
+```
+
+### Common Operations
+
+```kotlin
+writable.add(4)
+writable.removeAt(0)
+println(readOnly[2])       // 3
+println(writable.size)     // 3
+```
+
+### Iteration & Indexing
+
+```kotlin
+for (v in writable) println(v)
+for (i in writable.indices) println("$i -> ${writable[i]}")
+```
+
+## 3. Sets
+
+A **set** holds **unique** elements, also split into read‑only vs mutable:
+
+| Interface | Mutable counterpart |
+| --------- | ------------------- |
+| `Set<T>`  | `MutableSet<T>`     |
+
+### Creation
+
+```kotlin
+val readOnlySet: Set<String>      = setOf("A","B","C","A")
+val mutableSet: MutableSet<String> = mutableSetOf("X","Y")
+```
+
+Duplicates are discarded in a `Set`.
+
+### Common Operations
+
+```kotlin
+mutableSet.add("Z")
+mutableSet.remove("X")
+println("Y" in readOnlySet)    // true
+```
+
+## 4. Maps
+
+Maps associate **keys** to **values**, again with read‑only vs mutable:
+
+| Interface   | Mutable counterpart |
+| ----------- | ------------------- |
+| `Map<K, V>` | `MutableMap<K, V>`  |
+
+### Creation
+
+```kotlin
+val readOnlyMap: Map<String, Int> = mapOf("one" to 1, "two" to 2)
+val mutableMap: MutableMap<String, Int> = mutableMapOf()
+```
+
+You can also use `Pair("key", value)` or the infix `to` operator.
+
+### Common Operations
+
+```kotlin
+println(readOnlyMap["one"])    // 1
+mutableMap["three"] = 3
+mutableMap.remove("two")
+println(mutableMap.keys)       // [three]
+```
+
+## 5. Collection Transformations
+
+Kotlin’s standard library provides **extension functions** to transform collections:
+
+- `map { }`, `filter { }`, `flatMap { }`
+- `groupBy { }`, `partition { }`, `zip(other)`
+- `associateBy { }`, `flatten()`
+
+Example:
+
+```kotlin
+val nums = listOf(1,2,3,4)
+val evens = nums.filter { it % 2 == 0 }      // [2,4]
+val squares = nums.map { it * it }          // [1,4,9,16]
+val pairs = nums.zip(evens)                 // [(1,2),(2,4)]
+```
+
+## 6. Sequences
+
+A **`Sequence<T>`** is a **lazy** counterpart to `Iterable<T>`—useful for chaining many operations without intermediate collections:
+
+```kotlin
+val seq = sequenceOf(1,2,3,4)
+  .map { it * 2 }
+  .filter { it % 3 == 0 }
+
+println(seq.toList())  // [6]
+```
+
+You can convert any collection with `asSequence()`. citeturn1search6
+
+## Choosing the Right Structure
+
+- **Fixed size**: use **`Array`**.
+- **Ordered, possibly duplicate**: use **`List`** / **`MutableList`**.
+- **Unique, unordered**: use **`Set`** / **`MutableSet`**.
+- **Key‑value**: use **`Map`** / **`MutableMap`**.
+- **Large or chained transformations**: consider **`Sequence`** for laziness.
+
+### Best Practices
+
+1. **Favor read‑only interfaces** (`List`, `Set`, `Map`) over mutable where possible.
+2. Use `val` for collection references to prevent accidental reassignments.
+3. For heavy transformation chains, **convert to `Sequence`** to avoid intermediate lists.
+4. When dealing with primitives in performance‑sensitive code, use specialized arrays (`IntArray`, etc.).
+5. Leverage the rich **extension functions** in `kotlin.collections` to write concise, functional‑style code.
+
+---
+
+# Conditional Statements
+
+Kotlin treats conditionals as **expressions**, not just statements—meaning they yield values.
+
+## 1. `if` Expression
+
+```kotlin
+// Simple if‑else
+val max = if (a > b) a else b
+
+// Multi‑branch
+val sign = if (x > 0) "positive"
+           else if (x < 0) "negative"
+           else "zero"
+
+// As a block expression
+val description = if (user.isActive) {
+    "Active user: ${user.name}"
+} else {
+    "Inactive user"
+}
+```
+
+Because `if` is an expression, you can assign its result directly to a variable. citeturn1search0
+
+## 2. `when` Expression
+
+Kotlin’s replacement for `switch`, but far more powerful:
+
+```kotlin
+when (x) {
+  0           -> println("Zero")
+  in 1..9     -> println("Single digit positive")
+  is String   -> println("A String of length ${x.length}")
+  else        -> println("Something else")
+}
+
+// `when` without an argument
+when {
+  x % 2 == 0  -> println("Even")
+  x % 2 != 0  -> println("Odd")
+}
+```
+
+- Can match constants, ranges, types, or arbitrary boolean conditions.
+- Is also an expression:
+  ```kotlin
+  val result = when (x) {
+    1 -> "One"
+    else -> "Other"
+  }
+  ```
+
+---
+
+# Looping Constructs
+
+## `for` Loops
+
+Kotlin **does not** have the classic `for(init; cond; inc)`—instead you iterate over anything that provides an iterator: ranges, arrays, collections, etc. citeturn1search0
+
+```kotlin
+// Over a range
+for (i in 1..5)       println(i)        // 1 2 3 4 5
+for (i in 5 downTo 1) println(i)        // 5 4 3 2 1
+for (i in 1..10 step 2) println(i)      // 1 3 5 7 9
+for (i in 1 until 5)  println(i)        // 1 2 3 4
+
+// Over an array
+val arr = arrayOf("a","b","c")
+for (item in arr)     println(item)     // a b c
+
+// With indices
+for (i in arr.indices) println("$i -> ${arr[i]}")
+
+// With index+value
+for ((idx, value) in arr.withIndex())
+    println("$idx -> $value")
+```
+
+## `while` and `do…while`
+
+Standard loop and its post‑test variant:
+
+```kotlin
+var i = 0
+while (i < 5) {
+  println(i++)
+}
+
+do {
+  println(i--)
+} while (i > 0)
+```
+
+## Loop Control: `break`, `continue`, and Labels
+
+- **`break`**: exit the nearest loop.
+- **`continue`**: skip to the next iteration.
+- **Labels**: name a loop to break/continue from an outer loop:
+
+```kotlin
+outer@ for (i in 1..3) {
+  for (j in 1..3) {
+    if (i * j == 4) break@outer
+    println("$i * $j = ${i*j}")
+  }
+}
+```
+
+## Best Practices
+
+1. **Use `when`** over multiple `if‑else` chains for clarity.
+2. **Prefer range‑based `for` loops** to index‑based when possible (safer, no off‑by‑one).
+3. **Leverage `withIndex()`** when you need both index and value.
+4. **Use labels sparingly**—only when nested loops truly require breaking out multiple levels.
+
+---
+
+# Functions
+
+Every function in Kotlin is declared with the `fun` keyword:
+
+```kotlin
+fun greet(name: String): String {
+    return "Hello, $name!"
+}
+```
+
+- **Name**: `greet`
+- **Parameters**: `(name: String)`
+- **Return type**: `: String`
+- **Body**: between `{ … }`
+
+You can also use an **expression body** when the function consists of a single expression:
+
+```kotlin
+fun square(x: Int): Int = x * x
+```
+
+## Parameters and Arguments
+
+- **Default arguments**:
+  ```kotlin
+  fun format(message: String, prefix: String = "[Info]") =
+      "$prefix $message"
+  ```
+- **Named arguments** let you pass parameters out of order:
+  ```kotlin
+  format(message = "Server started", prefix = "[Startup]")
+  ```
+- **Varargs** allow a variable number of arguments:
+  ```kotlin
+  fun log(vararg messages: String) {
+      messages.forEach { println(it) }
+  }
+  log("Init", "Loading", "Done")
+  ```
+
+## Local and Member Functions
+
+- **Top-level functions** live outside any class.
+- **Member functions** are defined inside classes or objects:
+  ```kotlin
+  class Counter {
+      private var count = 0
+      fun increment() { count++ }
+      fun getCount() = count
+  }
+  ```
+- **Local functions** can be declared inside other functions:
+  ```kotlin
+  fun process(data: List<Int>) {
+      fun isEven(x: Int) = x % 2 == 0
+      println(data.filter(::isEven))
+  }
+  ```
+
+## Extension Functions
+
+Add new methods to existing types without inheritance:
+
+```kotlin
+fun String.isPalindrome(): Boolean =
+    this == this.reversed()
+
+println("radar".isPalindrome()) // true
+```
+
+## Infix and Operator Functions
+
+- **Infix** for single-parameter calls in natural syntax:
+  ```kotlin
+  infix fun Int.times(str: String) = str.repeat(this)
+  println(3 times "Hi ") // Hi Hi Hi
+  ```
+- **Operator overloading** via the `operator` modifier:
+  ```kotlin
+  data class Point(val x: Int, val y: Int) {
+      operator fun plus(other: Point) =
+          Point(x + other.x, y + other.y)
+  }
+  println(Point(1,2) + Point(3,4)) // Point(x=4, y=6)
+  ```
+
+## Higher‑Order and Inline Functions
+
+- **Higher‑order**: take functions as parameters or return them:
+  ```kotlin
+  fun <T> List<T>.filterAndMap(
+      predicate: (T) -> Boolean,
+      transform: (T) -> T
+  ): List<T> = filter(predicate).map(transform)
+  ```
+- **Inline** functions can improve performance by avoiding object allocation for lambdas:
+  ```kotlin
+  inline fun measureTime(block: () -> Unit) { /*…*/ }
+  ```
+
+---
+
+# Lambda Expressions
+
+Lambda expressions are **function literals**—unnamed functions you can pass around as values.
+
+## Full Syntax
+
+```kotlin
+val sum: (Int, Int) -> Int = { x: Int, y: Int -> x + y }
+```
+
+- Surrounded by `{ }`
+- Parameters before `->`
+- Body after `->`
+- Last expression is the return value
+
+## Type Inference and Conciseness
+
+Kotlin often infers parameter types:
+
+```kotlin
+val sum = { x: Int, y: Int -> x + y }
+```
+
+When a lambda has a single parameter, you can omit the parameter declaration and `->`; use `it` instead:
+
+```kotlin
+val positives = listOf(-1, 2, 3).filter { it > 0 }
+```
+
+## Trailing Lambdas
+
+If the last parameter of a function is a function, you can pass the lambda outside the parentheses:
+
+```kotlin
+val product = listOf(1, 2, 3).fold(1) { acc, e -> acc * e }
+```
+
+If it’s the only parameter, omit parentheses entirely:
+
+```kotlin
+run { println("Hello") }
+```
+
+## Anonymous Functions
+
+For cases where you need an explicit return type or multiple return points, use anonymous functions:
+
+```kotlin
+val compare = fun(a: String, b: String): Boolean {
+    return a.length < b.length
+}
+listOf("one", "three", "four").maxWith(compare)
+```
+
+## Returning from Lambdas
+
+By default, lambdas return the last expression. To return from the **enclosing** function, use labels:
+
+```kotlin
+fun foo() {
+    listOf(1,2,3).forEach {
+        if (it == 2) return@forEach
+        println(it)
+    }
+    println("Done")
+}
+```
+
+---
+
+# Object Oriented Programming
+
+Kotlin supports classes like most modern programming languages. Classes are used extensively in developing kotlin based applications.
+
+## Keywords
+
+In Kotlin, several keywords are integral to implementing Object-Oriented Programming (OOP) principles. These keywords—`open`, `abstract`, `interface`, `object`, `companion`, `data`, `sealed`, and `inline`—facilitate the creation of flexible, reusable, and maintainable code. Let's explore each keyword in detail:
+
+### 1. `open`
+
+In Kotlin, classes and member functions are `final` by default, meaning they cannot be inherited or overridden. To allow a class or function to be extendable, you must mark it with the `open` keyword.
+
+**Usage:**
+
+```kotlin
+open class Animal {
+    open fun makeSound() {
+        println("Some generic sound")
+    }
+}
+
+class Dog : Animal() {
+    override fun makeSound() {
+        println("Bark")
+    }
+}
+```
+
+Here, the `Animal` class and its `makeSound` method are marked as `open`, allowing the `Dog` class to inherit and override them.
+
+### 2. `abstract`
+
+The `abstract` keyword is used to define abstract classes and methods. An abstract class cannot be instantiated and may contain abstract methods, which are declarations without implementations. Subclasses are required to provide implementations for these abstract methods.
+
+**Usage:**
+
+```kotlin
+abstract class Vehicle {
+    abstract fun start()
+}
+
+class Car : Vehicle() {
+    override fun start() {
+        println("Car starting")
+    }
+}
+```
+
+In this example, `Vehicle` is an abstract class with an abstract method `start`. The `Car` class extends `Vehicle` and provides an implementation for the `start` method.
+
+### 3. `interface`
+
+An `interface` in Kotlin defines a contract that classes can implement. Interfaces can contain abstract methods as well as method implementations. A class can implement multiple interfaces, facilitating multiple inheritance.
+
+**Usage:**
+
+```kotlin
+interface Drivable {
+    fun drive()
+}
+
+interface Flyable {
+    fun fly()
+}
+
+class FlyingCar : Drivable, Flyable {
+    override fun drive() {
+        println("Driving")
+    }
+
+    override fun fly() {
+        println("Flying")
+    }
+}
+```
+
+Here, `FlyingCar` implements both `Drivable` and `Flyable` interfaces, providing concrete implementations for their methods.
+
+### 4. `object`
+
+The `object` keyword is used to declare singleton objects, ensuring that only one instance of the object exists. This is particularly useful for creating utility objects or managing shared state.
+
+**Usage:**
+
+```kotlin
+object Database {
+    fun connect() {
+        println("Connected to database")
+    }
+}
+```
+
+The `Database` object can be accessed directly using its name, and the `connect` method can be called without creating an instance.
+
+### 5. `companion`
+
+A `companion object` is a special object declaration inside a class. Members of the companion object can be accessed directly via the class name, similar to static members in Java.
+
+**Usage:**
+
+```kotlin
+class Logger {
+    companion object {
+        fun log(message: String) {
+            println(message)
+        }
+    }
+}
+
+// Usage
+Logger.log("This is a log message")
+```
+
+Here, `log` is a function inside the companion object of the `Logger` class and can be called using the class name.
+
+### 6. `data`
+
+The `data` keyword is used to create data classes, which are primarily intended to hold data. The compiler automatically generates standard methods such as `equals`, `hashCode`, and `toString` for data classes.
+
+**Usage:**
+
+```kotlin
+data class User(val name: String, val age: Int)
+```
+
+This `User` data class automatically has `equals`, `hashCode`, and `toString` methods generated based on its properties. citeturn0search6
+
+### 7. `sealed`
+
+A `sealed` class or interface restricts the class hierarchy by allowing subclasses only within the same file. This is useful for representing restricted class hierarchies, such as when modeling a finite set of possible types.
+
+**Usage:**
+
+```kotlin
+sealed class Result {
+    data class Success(val data: String) : Result()
+    data class Error(val exception: Exception) : Result()
+}
+```
+
+In this example, `Result` is a sealed class with two subclasses, `Success` and `Error`, representing different outcomes.
+
+### 8. `inline`
+
+The `inline` keyword is used to request the compiler to inline a function's body at the call site, which can improve performance by eliminating the overhead of function calls. It's particularly useful for higher-order functions.
+
+**Usage:**
+
+```kotlin
+inline fun measureTime(block: () -> Unit) {
+    val start = System.currentTimeMillis()
+    block()
+    val end = System.currentTimeMillis()
+    println("Time taken: ${end - start} ms")
+}
+```
+
+Here, `measureTime` is an inline function that measures the execution time of a code block passed to it.
+
+## Classes and Objects
+
+- **Classes**: Blueprints for creating objects, defining properties (attributes) and methods (functions) that the objects will have.
+  ```kotlin
+  class Person(val name: String, var age: Int) {
+      fun greet() {
+          println("Hello, my name is $name.")
+      }
+  }
+  ```
+- **Objects**: Instances of classes that hold actual data and can invoke methods defined in their class.
+  ```kotlin
+  val person = Person("Alice", 30)
+  person.greet() // Outputs: Hello, my name is Alice.
+  ```
+
+In Kotlin, you can also create singleton objects using the `object` keyword:
+
+```kotlin
+object Database {
+    fun connect() {
+        println("Connected to database.")
+    }
+}
+```
+
+This `Database` object is a singleton, meaning only one instance exists throughout the application.
+
+## Inheritance
+
+Inheritance allows a new class (subclass or derived class) to acquire the properties and methods of an existing class (superclass or base class), promoting code reusability.
+
+- **Superclass**: The parent class whose features are inherited.
+- **Subclass**: The child class that inherits from the superclass.
+
+In Kotlin, classes are final by default; to allow inheritance, you must mark the class with the `open` keyword:
+
+```kotlin
+open class Vehicle(val brand: String) {
+    open fun start() {
+        println("$brand vehicle is starting.")
+    }
+}
+
+class Car(brand: String, val model: String) : Vehicle(brand) {
+    override fun start() {
+        println("$brand $model is starting.")
+    }
+}
+```
+
+Here, `Car` inherits from `Vehicle` and overrides the `start` method to provide its specific implementation.
+
+## Encapsulation
+
+Encapsulation is the bundling of data (properties) and methods (functions) that operate on that data into a single unit, typically a class. It restricts direct access to some of an object's components, enhancing data security and integrity.
+
+In Kotlin, you can control the visibility of class members using access modifiers:
+
+- `private`: Accessible only within the same class.
+- `protected`: Accessible within the class and its subclasses.
+- `internal`: Accessible within the same module.
+- `public` (default): Accessible from anywhere.
+
+For example:
+
+```kotlin
+class BankAccount(private var balance: Double) {
+    fun deposit(amount: Double) {
+        if (amount > 0) {
+            balance += amount
+        }
+    }
+
+    fun getBalance(): Double {
+        return balance
+    }
+}
+```
+
+Here, the `balance` property is private, so it can't be accessed directly from outside the `BankAccount` class. Instead, access is provided through public methods.
+
+## Abstraction
+
+Abstraction involves hiding complex implementation details and showing only the essential features of an object. In Kotlin, abstraction is achieved using abstract classes and interfaces.
+
+- **Abstract Classes**: Cannot be instantiated and can contain both abstract (unimplemented) and concrete (implemented) methods.
+  ```kotlin
+  abstract class Animal {
+      abstract fun makeSound()
+      fun sleep() {
+          println("Sleeping...")
+      }
+  }
+  ```
+- **Interfaces**: Define a contract that classes can implement. They can contain abstract methods and default method implementations.
+  ```kotlin
+  interface Flyable {
+      fun fly()
+  }
+
+  class Bird : Animal(), Flyable {
+      override fun makeSound() {
+          println("Chirp chirp")
+      }
+
+      override fun fly() {
+          println("Flying high")
+      }
+  }
+  ```
+
+In this example, `Bird` inherits from the abstract class `Animal` and implements the `Flyable` interface, providing concrete implementations for the abstract methods.
+
+## Polymorphism
+
+Polymorphism allows objects of different classes to be treated as objects of a common super class. The most common use of polymorphism in OOP occurs when a parent class reference is used to refer to a child class object.
+
+In Kotlin, polymorphism is typically achieved through method overriding:
+
+```kotlin
+open class Shape {
+    open fun draw() {
+        println("Drawing a shape")
+    }
+}
+
+class Circle : Shape() {
+    override fun draw() {
+        println("Drawing a circle")
+    }
+}
+
+class Square : Shape() {
+    override fun draw() {
+        println("Drawing a square")
+    }
+}
+
+fun main() {
+    val shapes: List<Shape> = listOf(Circle(), Square())
+    for (shape in shapes) {
+        shape.draw()
+    }
+}
+```
+
+In this example, even though the list is of type `Shape`, the correct `draw` method is called for each subclass (`Circle` and `Square`), demonstrating polymorphism.
+
+## Data Classes
+
+Kotlin provides a concise way to create classes whose primary purpose is to hold data. These are called data classes and are marked with the `data` keyword:
+
+```kotlin
+data class User(val name: String, val age: Int)
+```
+
+The compiler automatically generates useful methods like `equals()`, `hashCode()`, `toString()`, and `copy()` for data classes.
+
+---
+
+# Coroutines
+
+Traditional threading (e.g. Java’s `Thread`/`Runnable`) is heavy: each thread consumes stack memory, and context switches are expensive. Callbacks (e.g. for network or I/O) quickly lead to “callback hell.” Coroutines give you **lightweight**, **suspension‑based** concurrency:
+
+- **Lightweight**: you can launch thousands of coroutines on a single thread.
+- **Non‑blocking**: suspending a coroutine frees the underlying thread to do other work.
+- **Structured**: coroutines follow your code’s structure, avoiding leaks and orphaned work.
+
+## Suspend Functions
+
+A **suspend** function can suspend without blocking its thread. Mark it with `suspend`:
+
+```kotlin
+suspend fun fetchUser(id: Int): User {
+    delay(1_000)               // suspends this coroutine, not the thread
+    return api.getUser(id)     // may suspend internally
+}
+```
+
+> [!NOTE]
+> You can only call `suspend` functions from another suspend function or inside a coroutine builder (`launch`, `async`, etc.).
+
+## Coroutine Builders
+
+### 1 `launch`
+
+Fire‑and‑forget. Returns a `Job` you can cancel:
+
+```kotlin
+val job = CoroutineScope(Dispatchers.IO).launch {
+  val user = fetchUser(42)
+  println(user.name)
+}
+// Later...
+job.cancel()  // cooperative cancellation
+```
+
+### 2 `async` / `await`
+
+For concurrent tasks that produce a result. Returns a `Deferred<T>`:
+
+```kotlin
+val deferred = scope.async(Dispatchers.Default) {
+  fetchUser(42)   // returns User
+}
+val user = deferred.await()  // suspends until result is ready
+```
+
+## Structured Concurrency
+
+Coroutines should be tied to a **scope** that reflects their lifecycle:
+
+- **`CoroutineScope`** you manage yourself
+- **`viewModelScope`** in Android ViewModels
+- **`lifecycleScope`** in Activities/Fragments
+
+When the scope is cancelled (e.g. `ViewModel` cleared, Activity destroyed), all its coroutines are cancelled automatically, preventing leaks.
+
+## Dispatchers and Context
+
+A **`CoroutineContext`** carries metadata about a coroutine, most importantly its **Dispatcher**, which determines the thread pool:
+
+| Dispatcher               | Use case                                          |
+| ------------------------ | ------------------------------------------------- |
+| `Dispatchers.Main`       | UI work on Android’s main thread                  |
+| `Dispatchers.IO`         | I/O‑bound work (disk, network)                    |
+| `Dispatchers.Default`    | CPU‑intensive work                                |
+| `Dispatchers.Unconfined` | Starts in current thread, then follows suspension |
+
+Switch context within a coroutine using `withContext`:
+
+```kotlin
+suspend fun loadData() {
+  val data = withContext(Dispatchers.IO) {
+    fetchFromNetwork()
+  }
+  updateUi(data)  // back on caller’s dispatcher, e.g. Main
+}
+```
+
+## Cancellation and Timeouts
+
+Coroutines are **cooperatively** cancelled. Calling `job.cancel()` or cancelling the scope signals cancellation, and suspension points (e.g. `delay`, `withContext`) check for it.
+
+```kotlin
+val job = launch {
+  repeat(1000) { i ->
+    println("Working $i …")
+    delay(500)
+  }
+}
+delay(1300)
+job.cancel()            // cancels the coroutine
+job.join()              // waits for its completion
+println("Done")
+```
+
+Use `withTimeout` or `withTimeoutOrNull` for time‑bounded operations:
+
+```kotlin
+try {
+  withTimeout(1_000) {
+    longRunningTask()
+  }
+} catch (e: TimeoutCancellationException) {
+  // handle timeout
+}
+```
+
+## Exception Handling
+
+Uncaught exceptions in coroutines propagate to the **`CoroutineExceptionHandler`** in the scope:
+
+```kotlin
+val handler = CoroutineExceptionHandler { _, e ->
+  println("Caught $e")
+}
+CoroutineScope(Dispatchers.Default + handler).launch {
+  throw IllegalStateException("Oops")
+}
+```
+
+Inside `async`, exceptions are stored in the `Deferred` and rethrown on `await()`. Use `supervisorScope` or `SupervisorJob` to isolate failures:
+
+```kotlin
+supervisorScope {
+  val child = launch { /* may fail */ }
+  // other children unaffected by child’s failure
+}
+```
+
+## Advanced Topics
+
+### `invokeOnCompletion`
+
+Attach callbacks to a coroutine’s completion:
+
+```kotlin
+job.invokeOnCompletion { cause ->
+  println("Completed: $cause")
+}
+```
+
+### Coroutine Names and Debugging
+
+Name coroutines for easier debugging:
+
+```kotlin
+launch(CoroutineName("MyCoroutine")) { … }
+```
+
+Use IntelliJ’s coroutine debugger to visualize running coroutines.
+
+## Best Practices
+
+1. **Prefer `suspend` over callbacks**—it leads to linear, readable code.
+2. **Use structured concurrency**—always launch coroutines in a well‑defined scope.
+3. **Choose dispatchers wisely**—don’t do I/O on `Dispatchers.Main`.
+4. **Handle cancellation**—ensure you clean up resources when cancelled.
+5. **Isolate failures**—use `supervisorScope` for independent child coroutines.
+6. **Avoid `GlobalScope`**—it’s easy to leak work outside any lifecycle.
+
+---
+
+# Flows
+
+- **Asynchronous streams**: Unlike a single‑result `suspend` function, a `Flow<T>` can emit multiple values over time (e.g. live database updates, user events, or polling APIs)
+- **Cold by default**: A flow doesn’t start emitting until someone calls a terminal operator (e.g. `collect`) citeturn1search9
+- **Built on coroutines**: Leverages structured concurrency, cancellation, and dispatchers for thread‑safe, non‑blocking streams
+
+## Core Concepts
+
+### Cold vs. Hot
+
+- **Cold flows** (default): each collector triggers a fresh execution of the upstream block.
+- **Hot flows** (`StateFlow`, `SharedFlow`): start producing regardless of collectors; multiple collectors share the same emissions.
+
+### Flow Lifecycle & Context
+
+- **Context preservation**: collection always happens in the collector’s coroutine context, unless you explicitly switch with `flowOn`
+- **Sequential**: by default, each value is processed through all operators in order on the same coroutine.
+
+## Creating Flows
+
+### `flow { … }` Builder
+
+Most flexible; call `emit(value)` to push values:
+
+```kotlin
+val countdown: Flow<Int> = flow {
+  for (i in 5 downTo 1) {
+    delay(1_000)   // suspends without blocking
+    emit(i)
+  }
+}
+```
+
+### Convenience Factories
+
+- `flowOf(vararg values)`
+- `list.asFlow()`
+- `channelFlow { … }` for complex, multi‑producer scenarios
+
+## Collecting Flows
+
+```kotlin
+lifecycleScope.launch {
+  countdown.collect { value ->
+    println("Got $value")
+  }
+}
+```
+
+- **`collect`** is a **suspending** terminal operator; it won’t return until the flow completes or is cancelled.
+
+## Intermediate Operators
+
+Flows are highly composable. Common operators:
+
+| Operator           | Description                                              |
+| ------------------ | -------------------------------------------------------- |
+| `map { }`          | Transform each emitted value                             |
+| `filter { }`       | Only let values matching predicate pass                  |
+| `take(n)`          | Only first `n` values                                    |
+| `onStart { }`      | Side‑effect before any emission                          |
+| `onEach { }`       | Side‑effect on each emission                             |
+| `onCompletion { }` | Side‑effect when flow completes (or fails)               |
+| `catch { }`        | Handle exceptions upstream                               |
+| `buffer()`         | Decouple producer/consumer speeds by buffering emissions |
+| `conflate()`       | Drop intermediate values if collector is slow            |
+| `flatMapConcat`    | Map each value to a new flow, concatenate sequentially   |
+| `flatMapMerge`     | Map to flows and merge concurrently                      |
+| `flatMapLatest`    | Cancel previous inner flow when a new value arrives      |
+
+## Context Control
+
+### `flowOn`
+
+Shift upstream emission to a specific dispatcher:
+
+```kotlin
+val dataFlow = repository.dataStream
+  .flowOn(Dispatchers.IO)   // database/network on IO
+```
+
+### `withContext` Inside Operators
+
+For fine‑grained control:
+
+```kotlin
+flow {
+  emit(fetchData())       // default context
+}
+.map { data ->
+  withContext(Dispatchers.Default) { computeHeavy(data) }
+}
+```
+
+## Exception Handling
+
+- **`catch { }`**: intercept upstream exceptions and emit fallback values or rethrow:
+  ```kotlin
+  flow { emit(api.call()) }
+    .catch { e -> emit(emptyList()) }
+    .collect { … }
+  ```
+- **`onCompletion { cause -> … }`**: runs on normal completion or failure (inspect `cause`).
+
+## Hot Streams: `StateFlow` & `SharedFlow`
+
+### `StateFlow`
+
+- Holds a **single up‑to‑date** value
+- Replays latest value to new collectors
+- Ideal for UI state in ViewModels:
+  ```kotlin
+  private val _uiState = MutableStateFlow(UiState())
+  val uiState: StateFlow<UiState> = _uiState
+
+  fun update() { _uiState.value = … }
+  ```
+
+### `SharedFlow`
+
+- Broadcast stream to multiple collectors
+- Configurable replay cache and buffering
+- Good for events (e.g. navigation, toasts).
+
+## Backpressure & Buffering
+
+By default, `emit` suspends until the collector processes the value. Use:
+
+- `buffer()` to introduce a buffer (producer never waits)
+- `conflate()` to drop old values when collector is busy
+- `collectLatest { }` to cancel previous block on new emission
+
+## Android/Compose Integration
+
+### Collecting in Compose
+
+Use the **`collectAsState()`** or **`collectAsStateWithLifecycle()`** extension to convert a `StateFlow` into Compose state:
+
+```kotlin
+@Composable
+fun CounterScreen(vm: CounterViewModel = viewModel()) {
+  val count by vm.countState.collectAsState()
+  Button(onClick = vm::increment) {
+    Text("Count: $count")
+  }
+}
+```
+
+### `ViewModel` Scope
+
+Always launch flows in `viewModelScope` to respect the `ViewModel`’s lifecycle:
+
+```kotlin
+init {
+  viewModelScope.launch {
+    repository.dataFlow
+      .catch { … }
+      .collect { _uiState.value = it }
+  }
+}
+```
+
+## Best Practices
+
+1. **Keep flows cold** unless you need hot behavior.
+2. **Use `StateFlow` for UI state**, `SharedFlow` for events.
+3. **Buffer or conflate** when producers are faster than consumers.
+4. **Handle exceptions** with `catch` and `onCompletion`.
+5. **Leverage `flowOn`** to offload heavy work.
+6. **Use structured concurrency**—collect flows in appropriate scopes.
+
+---
+
+# Special Keywords
+
+Here’s a rundown of some of Kotlin’s more “unusual” (i.e. non‑Java) keywords—what they do and small examples of each.
+
+### 1. `by` – Delegation
+
+Kotlin has **built‑in support** for the Delegation pattern via `by`.
+
+- **Class delegation**: forward an interface’s implementation to another object.
+  ```kotlin
+  interface Logger { fun log(msg: String) }
+  class ConsoleLogger : Logger {
+    override fun log(msg: String) = println("LOG: $msg")
+  }
+  // Derived will implement Logger by delegating to 'delegate'
+  class MyService(logger: Logger) : Logger by logger
+
+  fun main() {
+    val svc = MyService(ConsoleLogger())
+    svc.log("Hello")  // prints "LOG: Hello"
+  }
+  ```
+- **Property delegation**: delegate getter/setter to another object (e.g. `lazy`, `observable`).
+  ```kotlin
+  class User {
+    var name: String by Delegates.observable("<no name>") { _, old, new ->
+      println("Name changed from $old to $new")
+    }
+  }
+  ```
+
+### 2. `is` / `!is` – Type‑check (and Smart Casts)
+
+Tests whether a value is (or isn’t) of a given type at **runtime**, with **smart‑cast** support. citeturn3search0
+
+```kotlin
+fun describe(x: Any) {
+  if (x is String) {
+    // x is auto‑cast to String here
+    println("String of length ${x.length}")
+  } else if (x !is Int) {
+    println("Not an Int")
+  }
+}
+```
+
+### 3. `as` / `as?` – Cast (and Safe Cast)
+
+Convert one type to another; `as?` returns `null` on failure instead of throwing.
+
+```kotlin
+val obj: Any = "Hello"
+val str: String = obj as String      // unsafe cast
+val maybeInt: Int? = obj as? Int     // safe cast; yields null
+```
+
+### 4. `in` – Membership & Ranges
+
+- **Membership**: test if an element is in a collection or range.
+- **Ranges**: `..` is a special infix operator but often used with `in`.
+
+```kotlin
+if (5 in 1..10) println("Within range")
+val list = listOf("a","b","c")
+if ("b" in list) println("Found b")
+```
+
+### 5. `object` – Singleton & Object Declaration
+
+Defines a **singleton** or an **anonymous object**:
+
+```kotlin
+object AppConfig {
+  val version = "1.0"
+}
+println(AppConfig.version)  // "1.0"
+```
+
+### 6. `companion` – Companion Object
+
+Gives a class a singleton “companion” for factory methods or constants:
+
+```kotlin
+class MyClass {
+  companion object {
+    const val CONST = 42
+    fun create() = MyClass()
+  }
+}
+println(MyClass.CONST)
+```
+
+### 7. `data` – Data Class
+
+Auto‑generates `equals`/`hashCode`/`toString`/`copy` for classes that hold data:
+
+```kotlin
+data class User(val name: String, val age: Int)
+val u = User("Alice",30)
+println(u)  // User(name=Alice, age=30)
+```
+
+### 8. `sealed` – Sealed Class
+
+Restricts subclassing to a known set of types (good for exhaustive `when`):
+
+```kotlin
+sealed class Result
+data class Success(val data: String): Result()
+object Failure: Result()
+
+fun handle(r: Result) = when(r) {
+  is Success -> println(r.data)
+  Failure    -> println("Error")
+}
+```
+
+### 9. `inline`, `noinline`, `crossinline`, `reified` – Inline Functions & Lambdas
+
+- **`inline`**: copy function body at call site (reduces lambda overhead).
+- **`noinline`** / **`crossinline`**: control which lambda parameters are inlined.
+- **`reified`**: in an inline function, let you refer to generic type arguments at runtime. citeturn1search8
+
+```kotlin
+inline fun <reified T> Gson.fromJson(json: String) =
+  fromJson(json, T::class.java)
+
+inline fun doWork(crossinline block: ()->Unit) {
+  thread { block() }  // cannot use non‑crossinline return
+}
+```
+
+### 10. `suspend` – Suspend Function
+
+Marks functions that can suspend without blocking threads—core of coroutine APIs:
+
+```kotlin
+suspend fun loadData(): Data {
+  delay(1000)
+  return api.fetch()
+}
+```
+
+### 11. `operator` & `infix` – Operator & Infix Functions
+
+- **`operator`**: overload existing operators (`+`, `get`, etc.).
+- **`infix`**: call single‑parameter functions without `.`/`()` syntax.
+
+```kotlin
+data class Point(val x:Int,val y:Int) {
+  operator fun plus(o: Point) = Point(x+o.x, y+o.y)
+  infix fun distanceTo(o:Point): Double = /*…*/
+}
+val p = Point(1,2) + Point(3,4)
+val d = p distanceTo Point(5,6)
+```
+
+### 12. `external` – External Declaration
+
+Marks functions implemented in native (C/C++) code via JNI:
+
+```kotlin
+external fun nativeFoo(x: Int): String
+```
+
+### 13. `const` – Compile‑Time Constant
+
+For top‑level or `const`-qualified `val` inside `object`/`companion`—inlined at compile time:
+
+```kotlin
+const val MAX = 100
+```
+
+### 14. `vararg` – Variable Arguments
+
+Allow passing a variable number of parameters:
+
+```kotlin
+fun log(vararg msgs: String) {
+  msgs.forEach(::println)
+}
+log("a","b","c")
+```
+
+### 15. `lateinit` – Late Initialization
+
+For non‑nullable `var` properties that you’ll initialize later (e.g. in Android’s `onCreate`):
+
+```kotlin
+lateinit var binding: ActivityMainBinding
+```
+
+### 16. `tailrec` – Tail‑Recursion
+
+Optimizes a recursive function into a loop when the recursive call is the function’s last operation:
+
+```kotlin
+tailrec fun fact(n: Int, acc: Int = 1): Int =
+  if (n <= 1) acc else fact(n-1, n*acc)
+```
+
+### 17. `where` – Generic Constraints
+
+Add multiple or complex constraints on generic parameters:
+
+```kotlin
+fun <T> copy(dest: MutableList<T>, src: List<T>) where T: Number, T: Comparable<T> {
+  // …
+}
+```
+
+### 18. Variance: `out` / `in`
+
+- **`out T`**: covariant—allows `Producer<Subtype>` where `Producer<Supertype>` expected.
+- **`in T`**: contravariant—allows `Consumer<Supertype>` where `Consumer<Subtype>` expected.
+
+```kotlin
+interface Producer<out T> { fun produce(): T }
+interface Consumer<in T> { fun consume(item: T) }
+```
+
+### 19. `inner` – Inner Class
+
+Give a nested class access to its outer instance:
+
+```kotlin
+class Outer {
+  inner class Inner {
+    fun foo() = this@Outer
+  }
+}
+```
+
+### 20. `typealias` – Type Alias
+
+Create an alternative name for an existing type:
+
+```kotlin
+typealias StringMap = Map<String,String>
+fun useMap(m: StringMap) { /*…*/ }
+```
