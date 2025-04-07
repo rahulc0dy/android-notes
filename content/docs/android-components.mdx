@@ -14,7 +14,7 @@ Android apps are primarily made up of five different types of components:
 
 5. **Intents**: These serve as messages or commands to the Android system. They’re used to signal to the Android system that certain events have occurred.
 
-   ![[Android Hierarchy]]
+![Android Hierarchy](/images/android-hierarchy-dark.png)
 
 ---
 
@@ -25,7 +25,7 @@ Android apps are primarily made up of five different types of components:
 _A container for one or more screens of your app._
 `MainActiviry`: entry point of the app.
 
-![[Android Activity Lifecycle]]
+![Lifecycle](/images/activity-lifecycle-dark.png)
 
 1. `onCreate()` - called when the activity is first created, followed by
 2. `onStart()` - when the activity becomes visible to the user.
@@ -45,7 +45,7 @@ The activities can go through different states in their lifecycle, often due to 
 
 The **tasks backstack** in Android refers to the way Android manages and arranges tasks in a stack-like structure. Every task has a stack of activities, which is referred to as the task’s back stack. The activities are placed in the order they are opened. When a new activity is started, it is placed at the top of the stack and becomes the running activity, while the previous activity is paused and put into the back stack. When you press the back button, the current activity is destroyed and the activity at the top of the back stack becomes active again. Android defines how to navigate between tasks and activities using this back stack concept.
 
-![[Back Stack]]
+![Back Stack](/images/back-stack-dark.png)
 
 ## Tasks
 
@@ -129,7 +129,7 @@ It is similar to `singleTask` except that no other activities will be created in
 ### The Lifecycle of View Models
 
 The issue of configuration changes (like screen rotation). The activity gets destroyed and recreated during configuration changes, which typically results in loss of state if using standard object properties. By using Android’s architecture component `ViewModel`, which survives these configuration changes, the issues with state loss are resolved. This ensures user experience remains uninterrupted when the device’s configuration changes.
-![[MVVM]]
+![MVVM](/images/android-mvvm-dark.png)
 View models transform data from one form to another, typically from a non usable form to a usable form in the UI.
 
 ### Functions of View Models
@@ -143,8 +143,10 @@ View models transform data from one form to another, typically from a non usable
 1. **Using `ViewModel` Provider**: A method to ensure that a single instance of `ViewModel` is retained during configuration changes.
 2. **`ViewModel` Factory**: `ViewModels` require constructor parameters, it introduces a `ViewModel` Factory that allows for the creation of `ViewModel` instances with specific dependencies.
 
-> [!NOTE]
-> It is common to have one view model per activity.
+<Callout title="Note">
+  {" "}
+  It is common to have one view model per activity.{" "}
+</Callout>
 
 _ContactViewModal.kt_
 
@@ -407,11 +409,12 @@ With Jetpack Compose, the Navigation component has been redesigned to work seaml
 
   ```kotlin
   NavHost(navController = navController, startDestination = "home") {
-      composable(         route = "profile/{userId}",         deepLinks =
-      listOf(navDeepLink { uriPattern = "myapp://profile/{userId}" })     ) {
-      backStackEntry ->         val userId =
-      backStackEntry.arguments?.getString("userId")
-      ProfileScreen(userId = userId)     } }
+     composable(route = "profile/{userId}", deepLinks =
+     listOf(navDeepLink { uriPattern = "myapp://profile/{userId}" })) {
+        backStackEntry -> val userId = backStackEntry.arguments?.getString("userId")
+        ProfileScreen(userId = userId)
+     }
+  }
   ```
 
   In this snippet:
