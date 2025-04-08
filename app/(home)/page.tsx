@@ -1,4 +1,5 @@
 import { Card, Cards } from "fumadocs-ui/components/card";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function HomePage() {
@@ -7,6 +8,13 @@ export default function HomePage() {
       {/* Hero */}
       <section className="text-center py-20">
         <div className="container mx-auto px-6">
+          <Image
+            src={"/images/android-sunset-icon.png"}
+            width={512}
+            height={512}
+            alt="icon"
+            className="text-center mx-auto"
+          />
           <h1 className="text-7xl text-fd-primary font-extrabold mb-4">
             Android Notes by Me
           </h1>
