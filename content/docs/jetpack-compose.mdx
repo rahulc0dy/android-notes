@@ -1,0 +1,1060 @@
+---
+title: Jetpack Compose
+description: A guide to using jetpack compose in android.
+---
+
+# Composable Functions
+
+In Jetpack Compose, a **composable function** is the primary building block for constructing a UI. These functions are annotated with `@Composable` and describe the UI in a declarative way. Instead of manipulating UI elements imperatively (as in the traditional View system), composable functions define what the UI should look like based on the current state.
+
+**Key Points:**
+
+- **Declarative Nature:** You declare the UI for a given state; when the state changes, the UI is automatically recomposed.
+- **Modularity:** Composable functions are highly modular and can be reused, nested, and combined to create complex interfaces.
+- **Stateless by Default:** They ideally act as pure functions with no side effects, thus making your UI predictable and easy to test.
+
+## The @Composable Annotation
+
+The `@Composable` annotation marks a function as composable. This tells the Compose compiler that the function is designed to construct a piece of UI.
+
+**Example:**
+
+```kotlin
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+
+@Composable
+fun Greeting(name: String) {
+    Text(text = "Hello, $name!")
+}
+```
+
+- **Usage:** Place the annotation on functions that emit UI elements.
+- **Constraints:** Composable functions cannot return values (other than to define UI) and cannot be called from regular, non-composable functions.
+
+## Building Composable Functions
+
+### Composition of UI
+
+A composable function can call other composable functions. This leads to the idea of building the UI as a tree of composable functions, much like a view hierarchy.
+
+**Example:**
+
+```kotlin
+import androidx.compose.material.Button
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+
+@Composable
+fun WelcomeScreen(userName: String) {
+    Column {
+        Greeting(name = userName)
+        Button(onClick = { /* Handle the action */ }) {
+            Text("Get Started")
+        }
+    }
+}
+```
+
+- **Nested Composables:** Each composable function contributes to the overall UI. This nesting allows you to break down the UI into logically separated components.
+- **Readability and Reusability:** Smaller composable functions are easier to maintain and test.
+
+### Parameters and Customization
+
+To make your composables flexible, design them with parameters so they can be reused with different data and configurations.
+
+**Example:**
+
+```kotlin
+@Composable
+fun CustomCard(
+    title: String,
+    description: String,
+    onCardClick: () -> Unit
+) {
+    Card(onClick = onCardClick) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(text = title, style = MaterialTheme.typography.h6)
+            Text(text = description, style = MaterialTheme.typography.body2)
+        }
+    }
+}
+```
+
+- **Callback Parameters:** Use lambdas (e.g., `onCardClick`) to handle events.
+- **Flexible UI:** Passing parameters allows the same composable to render different states or data.
+
+## Recomposition and State Management
+
+### Recomposition
+
+Recomposition is the process where composable functions are re-executed when the state read by them changes. The Compose runtime efficiently updates only those parts of the UI that depend on changed state.
+
+**Example with State:**
+
+```kotlin
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+
+@Composable
+fun Counter() {
+    // remember maintains the state across recompositions
+    val count = remember { mutableStateOf(0) }
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text(text = "Count: ${count.value}")
+        Button(onClick = { count.value++ }) {
+            Text("Increment")
+        }
+    }
+}
+```
+
+- **State APIs:** `remember`, `mutableStateOf`, and others (like `derivedStateOf`) help maintain state within composable functions.
+- **Best Practices:** Keep your composables stateless when possible by hoisting state to higher levels, which makes testing easier.
+
+### Side-Effects in Composables
+
+While composable functions ideally should be pure, side effects are sometimes necessary. Compose provides several APIs to manage side effects:
+
+- **LaunchedEffect:** For launching coroutines that tie to the composition’s lifecycle.
+- **SideEffect:** Executes a block of code after a successful recomposition.
+- **DisposableEffect:** Runs cleanup logic when a key changes or when the composable leaves the composition.
+
+**Example – Using LaunchedEffect:**
+
+```kotlin
+import androidx.compose.runtime.LaunchedEffect
+
+@Composable
+fun DataLoader(dataId: String) {
+    // Execute a suspend function when dataId changes
+    LaunchedEffect(dataId) {
+        val data = fetchData(dataId) // suspending function
+        // Update state with fetched data here
+    }
+    // Display UI that shows loading or loaded data...
+}
+```
+
+- **Lifecycle Awareness:** These side-effect APIs ensure that the effects are managed in harmony with the composable lifecycle.
+
+## Previewing Composable Functions
+
+Android Studio’s Compose Preview feature allows you to see UI changes in real time as you code.
+
+**Example:**
+
+```kotlin
+import androidx.compose.ui.tooling.preview.Preview
+
+@Preview(showBackground = true)
+@Composable
+fun GreetingPreview() {
+    Greeting(name = "Android Developer")
+}
+```
+
+- **@Preview Annotation:** Useful for quick UI iteration.
+- **Live Updates:** Changes in your composable functions reflect immediately in the preview.
+
+## Best Practices for Composable Functions
+
+### Keep Them Small and Focused
+
+- **Single Responsibility:** Each composable should do one thing well. This helps in reusing and testing the component.
+- **Modularity:** Break your UI into smaller, manageable pieces.
+
+### Manage State Effectively
+
+- **State Hoisting:** Instead of storing state in deeply nested composables, hoist the state to a common parent and pass it down as parameters.
+- **Avoid Overusing remember:** Use `remember` only when necessary, and prefer more explicit state management patterns (such as MVVM) for complex UIs.
+
+### Minimize Side Effects
+
+- **Purity:** Strive to keep composable functions pure. Use side-effect APIs when performing actions that interact with external systems (like network requests).
+- **Unidirectional Data Flow:** Encourage a flow where state changes are triggered by user interactions, and those changes propagate through the UI.
+
+## Testing Composable Functions
+
+Composable functions can be tested using tools provided by Jetpack Compose. Testing focuses on verifying that the UI state correctly reflects the data and user interactions.
+
+### UI Testing
+
+- **Compose Test APIs:** Jetpack Compose provides APIs like `composeTestRule` that let you locate, interact, and assert the state of composables.
+- **Example of a Simple Test:**
+
+  ```kotlin
+  import androidx.compose.ui.test.junit4.createComposeRule
+  import androidx.compose.ui.test.onNodeWithText
+  import org.junit.Rule
+  import org.junit.Test
+
+  class GreetingTest {
+      @get:Rule
+      val composeTestRule = createComposeRule()
+
+      @Test
+      fun greetingDisplaysCorrectName() {
+          composeTestRule.setContent {
+              Greeting("Test User")
+          }
+          composeTestRule.onNodeWithText("Hello, Test User!").assertExists()
+      }
+  }
+  ```
+
+- **Rapid Feedback:** UI tests in Compose help verify that recomposition and state changes are working as expected.
+
+---
+
+# Layouts
+
+In Jetpack Compose, UI is built up by combining composable functions. Layout composables determine how the children are measured and positioned on the screen. Unlike the classic XML-based layouts, Compose provides a flexible, declarative approach to layout by making use of composable functions and modifiers.
+
+**Key Concepts:**
+
+- **Composable Functions:** Every piece of UI is a function marked with `@Composable`.
+- **Modifiers:** Chainable elements to adjust layout properties (size, padding, alignment, etc.).
+- **Recomposition:** Layouts automatically update when state changes.
+
+Understanding layouts in Compose involves mastering both the built-in layout components (such as Column, Row, Box) and more advanced tools (like `ConstraintLayout` and custom layouts using the `Layout` API).
+
+## Standard Layout Components
+
+### Column
+
+A `Column` arranges its children vertically. It is often used when you need to stack elements one after the other.
+
+```kotlin
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.Text
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.Composable
+
+@Composable
+fun ColumnExample() {
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text(text = "First Item", modifier = Modifier.fillMaxWidth())
+        Text(text = "Second Item", modifier = Modifier.fillMaxWidth())
+    }
+}
+```
+
+**Notes:**
+
+- The modifier is applied to add padding.
+- Each child can be further modified; for example, using `fillMaxWidth()` to occupy the available horizontal space.
+
+### Row
+
+A `Row` arranges its children horizontally. Use it when elements need to be displayed side by side.
+
+```kotlin
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.Text
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.Composable
+
+@Composable
+fun RowExample() {
+    Row(modifier = Modifier.padding(16.dp)) {
+        Text(text = "Left Item")
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = "Right Item")
+    }
+}
+```
+
+**Notes:**
+
+- `Spacer` helps add spacing between items.
+- Rows are useful for horizontally aligning items such as icons next to text.
+
+### Box
+
+A `Box` is a simple layout that stacks its children on top of each other. It is useful for overlays and aligning content within a specific area.
+
+```kotlin
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.Text
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.runtime.Composable
+
+@Composable
+fun BoxExample() {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Text(
+            text = "Centered Text",
+            modifier = Modifier.align(Alignment.Center)
+        )
+    }
+}
+```
+
+**Notes:**
+
+- The `align` modifier positions the child relative to the Box.
+- Useful for absolute positioning or layering multiple components.
+
+## Advanced Layouts in Compose
+
+### ConstraintLayout
+
+`ConstraintLayout` in Compose brings a familiar, flexible way of positioning elements based on constraints (similar to XML `ConstraintLayout`) but with a Kotlin DSL.
+
+**Setting Up Dependency:**
+
+If you’re managing dependencies with a version catalog (e.g., _libs.versions.toml_), you might list the dependency like this:
+
+_libs.versions.toml_ (or in your catalog file):
+
+```toml
+[versions]
+composeConstraint = "1.0.1"
+
+[libraries]
+androidx-compose-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "composeConstraint" }
+```
+
+In your `build.gradle` (or `build.gradle.kts`), reference the catalog entry:
+
+```kotlin
+dependencies {
+    implementation(libs.androidx.compose.constraintlayout)
+}
+```
+
+**Using ConstraintLayout:**
+
+```kotlin
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.Button
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.compose.ui.tooling.preview.Preview
+
+@Composable
+fun ConstraintLayoutExample() {
+    ConstraintLayout(modifier = Modifier.fillMaxSize()) {
+        // Create references for the composables to constrain
+        val (button, text) = createRefs()
+
+        Button(
+            onClick = { /* Do something */ },
+            modifier = Modifier.constrainAs(button) {
+                top.linkTo(parent.top, margin = 16.dp)
+                start.linkTo(parent.start, margin = 16.dp)
+            }
+        ) {
+            Text("Press Me")
+        }
+
+        Text(
+            text = "Hello from ConstraintLayout",
+            modifier = Modifier.constrainAs(text) {
+                top.linkTo(button.bottom, margin = 16.dp)
+                start.linkTo(button.start)
+            }
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ConstraintLayoutPreview() {
+    ConstraintLayoutExample()
+}
+```
+
+**Notes:**
+
+- **createRefs():** Used to define constraints between multiple components.
+- **`ConstrainAs` Modifier:** Associates a constraint layout "id" with each composable and defines their constraints.
+
+### Custom Layouts using the Layout API
+
+Sometimes the built-in layouts may not meet all your custom needs. The `Layout` composable allows you to define custom measurement and layout logic.
+
+```kotlin
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.dp
+import androidx.compose.material.Text
+import androidx.compose.ui.tooling.preview.Preview
+
+@Composable
+fun CustomLayoutExample(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    Layout(content = content, modifier = modifier) { measurables, constraints ->
+        // Measure children with provided constraints
+        val placeables = measurables.map { measurable ->
+            measurable.measure(constraints)
+        }
+
+        // Determine the layout's size based on children
+        val width = placeables.maxOfOrNull { it.width } ?: constraints.minWidth
+        val height = placeables.sumOf { it.height }
+
+        layout(width, height) {
+            var yPosition = 0
+            // Place children one below the other
+            placeables.forEach { placeable ->
+                placeable.placeRelative(x = 0, y = yPosition)
+                yPosition += placeable.height
+            }
+        }
+    }
+}
+
+@Composable
+fun CustomLayoutContent() {
+    CustomLayoutExample(modifier = Modifier.padding(16.dp)) {
+        Text("Item One")
+        Text("Item Two")
+        Text("Item Three")
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CustomLayoutPreview() {
+    CustomLayoutContent()
+}
+```
+
+**Explanation:**
+
+- **Measuring:** Each child is measured individually with the provided constraints.
+- **Layout:** The final width and height are computed, and children are positioned one after the other.
+- This provides full control over layout behavior beyond what Row, Column, or Box offer.
+
+## Using Modifiers for Layout
+
+Modifiers in Compose are essential for changing the size, layout, and appearance of composables. They can be chained together in a concise manner:
+
+- **Padding:** `Modifier.padding(16.dp)`
+- **Size:** `Modifier.size(100.dp)` or `Modifier.fillMaxWidth()`
+- **Alignment:** Used within layout composables; for example, `Modifier.align(Alignment.Center)` within a Box.
+- **Background:** `Modifier.background(color = Color.LightGray)`
+- **Border:** `Modifier.border(width = 2.dp, color = Color.Gray)`
+
+**Example with Modifiers:**
+
+```kotlin
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.Composable
+import androidx.compose.material.Text
+import androidx.compose.ui.tooling.preview.Preview
+
+@Composable
+fun ModifierExample() {
+    Box(
+        modifier = Modifier
+            .size(150.dp)
+            .border(2.dp, Color.Gray)
+            .background(Color.LightGray),
+        contentAlignment = Alignment.Center
+    ) {
+        Text("Centered")
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ModifierExamplePreview() {
+    ModifierExample()
+}
+```
+
+**Takeaway:**
+
+- The order in which you chain modifiers can affect the outcome (e.g., padding versus border).
+- They provide an expressive way to build complex layouts without needing nested containers.
+
+---
+
+# State Management in Compose
+
+Jetpack Compose is built around a declarative UI paradigm. This means that rather than manually updating views, you declare what the UI should look like based on the current state. Whenever the state changes, the affected parts of the UI are automatically recomposed. Effective state management in Compose is crucial to building robust and maintainable apps.
+
+**Key Concepts:**
+
+- **State Drives UI:** The UI is a function of state. When state changes, the UI automatically updates.
+- **Recomposition:** The process where composable functions are re-invoked to reflect updated state.
+- **Immutable vs. Mutable State:** While data might change, you often use immutable snapshots to avoid unexpected behavior in the UI.
+
+## Fundamental State APIs in Compose
+
+### `remember` and `mutableStateOf`
+
+The most basic way to introduce state in a composable is by using `remember` together with `mutableStateOf`.
+
+- **`mutableStateOf`**: Creates a mutable state holder. When its value changes, any composable reading that state is automatically recomposed.
+- **`remember`**: Caches the state during recompositions, ensuring that the state survives even as the composable function is re-invoked.
+
+**Example – A Simple Counter:**
+
+```kotlin
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.material.Button
+import androidx.compose.material.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+
+@Composable
+fun Counter() {
+    // Use remember to store mutable state that survives recompositions.
+    val count = remember { mutableStateOf(0) }
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text(text = "Count: ${count.value}")
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = { count.value++ }) {
+            Text("Increment")
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CounterPreview() {
+    Counter()
+}
+```
+
+**Explanation:**
+
+- Every time `count.value` changes (e.g., via a button click), Compose automatically triggers a recomposition of the `Counter` composable.
+- Because `remember` stores the state only for the duration of the composition, the state is preserved across recompositions, but not across configuration changes.
+
+### `rememberSaveable`
+
+For state that needs to survive process death or configuration changes (such as screen rotations), use `rememberSaveable`. It saves the state using a compatible saver (typically to the Bundle).
+
+**Example – Counter with State Preservation:**
+
+```kotlin
+@Composable
+fun SaveableCounter() {
+    // rememberSaveable ensures state persists across configuration changes.
+    val count = rememberSaveable { mutableStateOf(0) }
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text(text = "Count: ${count.value}")
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = { count.value++ }) {
+            Text("Increment")
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SaveableCounterPreview() {
+    SaveableCounter()
+}
+```
+
+**Key Consideration:**
+
+- `rememberSaveable` uses type-safe savers for common types (e.g., primitives, Strings, etc.) and lets you provide custom savers for more complex objects.
+
+## Advanced State Management Techniques
+
+### Derived State
+
+When you have some state that is computed from other state, you can use `derivedStateOf` to automatically compute a value in a recomposition-friendly way.
+
+**Example – Derived State Calculation:**
+
+```kotlin
+@Composable
+fun DerivedStateExample() {
+    // Basic state that might affect other computed states.
+    var text by remember { mutableStateOf("Hello") }
+
+    // derivedStateOf calculates a new value only when its dependencies change.
+    val textLength by remember {
+        derivedStateOf { text.length }
+    }
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        TextField(
+            value = text,
+            onValueChange = { text = it },
+            label = { Text("Enter text") }
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text("Text length: $textLength")
+    }
+}
+```
+
+**Explanation:**
+
+- `derivedStateOf` ensures that the calculation of `text.length` happens only when the `text` state changes, optimizing recompositions.
+
+### Snapshot Flow
+
+Compose provides `snapshotFlow` to convert state reads into a Kotlin Flow. This allows you to react to state changes with coroutine-based streams which is especially useful for one-off side-effects or integrating with other reactive frameworks.
+
+**Example – Using snapshotFlow:**
+
+```kotlin
+import androidx.compose.runtime.*
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+
+@Composable
+fun SnapshotFlowExample() {
+    var count by remember { mutableStateOf(0) }
+
+    LaunchedEffect(key1 = Unit) {
+        // Creates a flow that emits values whenever state changes.
+        snapshotFlow { count }
+            .collect { value ->
+                println("Count changed: $value")
+            }
+    }
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text("Count: $count")
+        Button(onClick = { count++ }) {
+            Text("Increment")
+        }
+    }
+}
+```
+
+**Key Takeaway:**
+
+- Using `snapshotFlow` in combination with `LaunchedEffect` allows you to perform side effects in response to state changes in a structured manner.
+
+## State Hoisting and Unidirectional Data Flow
+
+### State Hoisting
+
+State hoisting is the process of moving state up to a parent composable. This allows for better separation of concerns and increases reusability by decoupling stateful logic from UI rendering.
+
+**Example – Hoisting State:**
+
+```kotlin
+@Composable
+fun HoistedCounter(
+    count: Int,
+    onIncrement: () -> Unit
+) {
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text("Count: $count")
+        Button(onClick = onIncrement) {
+            Text("Increment")
+        }
+    }
+}
+
+@Composable
+fun HoistedCounterContainer() {
+    // The state is maintained here and passed down as parameters.
+    var count by remember { mutableStateOf(0) }
+    HoistedCounter(count = count, onIncrement = { count++ })
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HoistedCounterPreview() {
+    HoistedCounterContainer()
+}
+```
+
+**Benefits of State Hoisting:**
+
+- **Improved Testability:** Stateless UI components are easier to test.
+- **Greater Reusability:** The same UI component can be reused in different contexts with different state sources.
+- **Clear Data Flow:** It enforces a unidirectional data flow where data only flows one way—from parent to child.
+
+### Unidirectional Data Flow
+
+Unidirectional data flow is a pattern where state changes move in one direction. The parent holds the state and passes it down to children. When a child needs to modify the state, it sends an event back to the parent. This pattern leads to predictable state transitions.
+
+**Illustration:**
+
+1. **State Is Held in a Single Source of Truth.**
+2. **Events Are Propagated Up:** Children invoke callbacks to inform the parent of changes.
+3. **Parent Updates State:** The UI is then refreshed with the new state passed down to children.
+
+## Best Practices for Managing State in Compose
+
+- **Keep Composables Pure:** Whenever possible, write composable functions that are side-effect free.
+- **Hoist Your State:** Move state as high as necessary so that the UI components remain flexible and stateless.
+- **Use Snapshot and Derived State Wisely:** Optimize recompositions by minimizing unnecessary recalculations.
+- **Leverage remember and rememberSaveable Appropriately:** Use `remember` for ephemeral state and `rememberSaveable` for state that should survive configuration changes.
+- **Limit Side Effects Inside Composables:** Use dedicated APIs (like `LaunchedEffect`, `DisposableEffect`) for state-related side effects so they can be properly managed during recomposition and disposal.
+- **Test Your States:** Utilize Jetpack Compose testing tools to assert that state changes are correctly reflected in the UI.
+
+<Callout title="Note">
+  The concepts and examples described above are derived from best practices
+  outlined in the official Jetpack Compose documentation and community
+  resources, ensuring that you have a solid foundation for managing state in a
+  modern declarative UI framework.
+</Callout>
+
+---
+
+# Navigation
+
+Jetpack Compose’s navigation library lets you define your app's screens as composable functions and manage navigation using a NavController. When coupled with Material 3 components, your UI will benefit from the latest design guidelines, theming, and components.
+
+**Key Concepts:**
+
+- **NavController:** Orchestrates navigation and manages the back stack.
+- **NavHost:** Hosts destinations defined in your navigation graph.
+- **Composable Destinations:** Each screen or section is a composable function declared as a destination.
+- **Route Parameters:** Pass arguments between screens via route placeholders.
+- **Deep Linking:** Allow external URLs (or intents) to navigate directly into your app.
+
+## Setting Up Dependencies Using a Version Catalog
+
+If you’re managing your dependencies with a version catalog (e.g., `libs.versions.toml`), add entries for Material 3 and Navigation Compose. Your catalog file might look like this:
+
+```toml
+[versions]
+compose = "1.5.0"
+navCompose = "2.6.0"
+material3 = "1.1.0" # Replace with the current stable version
+
+[libraries]
+androidx-compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
+androidx-compose-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "compose" }
+androidx-nav-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navCompose" }
+```
+
+Then, in your module’s `build.gradle.kts` (or Groovy) file, reference the catalog entries:
+
+```kotlin
+dependencies {
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.tooling.preview)
+    implementation(libs.androidx.nav.compose)
+}
+```
+
+This ensures you use Material 3 components consistently across your navigation flows and UI.
+
+## Creating a Basic Navigation Graph
+
+### Building a Simple NavHost
+
+Below is an example that uses Material 3’s buttons and typography within a navigation graph. In this example, we define two destinations—“home” and “details”—and use a NavController to navigate between them.
+
+```kotlin
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+
+@Composable
+fun MyNavigationApp() {
+    val navController = rememberNavController()
+    // Define the NavHost with a start destination
+    NavHost(navController = navController, startDestination = "home") {
+        // Home screen destination
+        composable("home") {
+            HomeScreen(
+                onNavigate = { navController.navigate("details") }
+            )
+        }
+        // Detail screen destination
+        composable("details") {
+            DetailScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+    }
+}
+
+@Composable
+fun HomeScreen(onNavigate: () -> Unit) {
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text(text = "Home Screen", style = MaterialTheme.typography.headlineMedium)
+        Button(onClick = onNavigate, modifier = Modifier.padding(top = 8.dp)) {
+            Text("Go to Details")
+        }
+    }
+}
+
+@Composable
+fun DetailScreen(onBack: () -> Unit) {
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text(text = "Detail Screen", style = MaterialTheme.typography.headlineMedium)
+        Button(onClick = onBack, modifier = Modifier.padding(top = 8.dp)) {
+            Text("Back to Home")
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun NavigationPreview() {
+    MyNavigationApp()
+}
+```
+
+**Explanation:**
+
+- **Material 3 Components:** This example uses Material 3’s `Button` and `Text` components along with MaterialTheme typography.
+- **NavController and NavHost:** These work together to define and manage your navigation graph.
+- **Navigation Actions:** Use `navigate` to transition forward and `popBackStack` to return to the previous screen.
+
+## Passing Arguments Between Destinations
+
+Often you need to send data from one screen to another. Compose Navigation supports route parameters for type-safe data passing.
+
+### Defining Routes with Arguments
+
+Below is a Material 3 example where the Home screen navigates to a Profile screen, passing a user ID as a parameter:
+
+```kotlin
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+
+@Composable
+fun MyNavigationAppWithArgs() {
+    val navController = rememberNavController()
+    NavHost(navController = navController, startDestination = "home") {
+        composable("home") {
+            HomeScreenWithArgs(onNavigate = { userId ->
+                navController.navigate("profile/$userId")
+            })
+        }
+        composable(
+            route = "profile/{userId}",
+            arguments = listOf(navArgument("userId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: "Unknown"
+            ProfileScreen(userId = userId, onBack = { navController.popBackStack() })
+        }
+    }
+}
+
+@Composable
+fun HomeScreenWithArgs(onNavigate: (String) -> Unit) {
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text(text = "Home Screen", style = MaterialTheme.typography.headlineMedium)
+        Button(onClick = { onNavigate("user_123") }, modifier = Modifier.padding(top = 8.dp)) {
+            Text("Go to Profile")
+        }
+    }
+}
+
+@Composable
+fun ProfileScreen(userId: String, onBack: () -> Unit) {
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text(text = "Profile Screen: $userId", style = MaterialTheme.typography.headlineMedium)
+        Button(onClick = onBack, modifier = Modifier.padding(top = 8.dp)) {
+            Text("Back")
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun NavigationArgsPreview() {
+    MyNavigationAppWithArgs()
+}
+```
+
+**Key Points:**
+
+- **Route Parameterization:** The route `"profile/{userId}"` defines a variable part.
+- **Argument Extraction:** The user ID is extracted from the `NavBackStackEntry` and used to display personalized content.
+- **Material 3 Styling:** The typography and button styles follow Material 3 guidelines.
+
+## Nested Graphs and Modular Navigation
+
+For larger apps, grouping related screens into nested graphs helps organize your navigation.
+
+### Creating a Nested Navigation Graph
+
+Below is an example showing a main screen with a nested “profile” navigation graph:
+
+```kotlin
+import androidx.navigation.compose.navigation
+
+@Composable
+fun MainNavigation() {
+    val navController = rememberNavController()
+
+    NavHost(navController = navController, startDestination = "main") {
+        composable("main") {
+            MainScreen(
+                onProfileClick = { navController.navigate("profileGraph/profileDetail/user_456") }
+            )
+        }
+        // Define a nested graph for the profile flow
+        navigation(startDestination = "profileDetail/{userId}", route = "profileGraph") {
+            composable(
+                route = "profileDetail/{userId}",
+                arguments = listOf(navArgument("userId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val userId = backStackEntry.arguments?.getString("userId") ?: "Default"
+                ProfileScreen(userId = userId, onBack = { navController.popBackStack() })
+            }
+        }
+    }
+}
+
+@Composable
+fun MainScreen(onProfileClick: () -> Unit) {
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text("Main Screen", style = MaterialTheme.typography.headlineMedium)
+        Button(onClick = onProfileClick, modifier = Modifier.padding(top = 8.dp)) {
+            Text("Go to Profile Flow")
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MainNavigationPreview() {
+    MainNavigation()
+}
+```
+
+**Notes:**
+
+- **Nested Navigation Graphs:** The `navigation { }` block groups related destinations.
+- **Route Hierarchy:** This modular approach helps manage complex navigation flows and back stack behavior.
+
+## Advanced Topics
+
+### Deep Linking
+
+Deep linking allows your app to handle external URIs. For example, you can configure a deep link for the Profile screen:
+
+```kotlin
+import androidx.navigation.navDeepLink
+
+composable(
+    route = "profile/{userId}",
+    arguments = listOf(navArgument("userId") { type = NavType.StringType }),
+    deepLinks = listOf(navDeepLink { uriPattern = "https://www.example.com/profile/{userId}" })
+) { backStackEntry ->
+    val userId = backStackEntry.arguments?.getString("userId") ?: "Unknown"
+    ProfileScreen(userId = userId, onBack = { navController.popBackStack() })
+}
+```
+
+### Animated Transitions
+
+For a smoother experience, consider integrating the [Accompanist Navigation Animation](https://google.github.io/accompanist/navigation-animation/) library alongside Material 3. This enables animated transitions between screens without sacrificing the declarative pattern.
+
+### State Restoration
+
+Compose Navigation naturally integrates with Android’s state restoration mechanisms. When combining with `ViewModel`-backed state and using navigation arguments, you can ensure a consistent user experience even after process death or configuration changes.
+
+## Best Practices for Navigation in Compose
+
+- **Centralize Navigation Logic:** Keep a single source of truth for your navigation graph.
+- **State Hoisting:** Make your UI components as stateless as possible, hoisting state to the parent composable or `ViewModel`.
+- **Type Safety:** Always define route arguments with proper types using `navArgument`.
+- **Modularity:** Organize navigation flows into nested graphs to improve maintainability.
+- **Material 3 Styling:** Use Material 3 components (e.g., `Button`, `Text`, `Scaffold`) to ensure your UI adheres to the latest design guidelines.
+- **Testing:** Leverage Compose testing APIs to validate navigation flows and argument passing.
+
+---
+
+# Animations in Compose
+
+Animations enrich the user experience. Compose provides simple APIs to animate properties.
+
+## Example: Animated Visibility
+
+```kotlin
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.material.Button
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+
+@Composable
+fun AnimatedContentExample() {
+    val visible = remember { mutableStateOf(true) }
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        Button(onClick = { visible.value = !visible.value }) {
+            Text(text = if (visible.value) "Hide" else "Show")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        AnimatedVisibility(
+            visible = visible.value,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            Text("Hello, I appear and disappear!")
+        }
+    }
+}
+
+@Preview
+@Composable
+fun PreviewAnimatedContent() {
+    AnimatedContentExample()
+}
+```
+
+**Key Takeaways:**
+
+- **AnimatedVisibility:** A composable that animates its content’s appearance and disappearance.
+- **Animation Effects:** Compose provides built-in animations such as `fadeIn` and `fadeOut`, along with options for custom animations.
+
+---
+
+# Best Practices and Tips
+
+- **State Hoisting:** Pass state and event handlers down the composable hierarchy to keep your UI stateless.
+- **Minimize Recomposition:** Use keys and memoization (`remember` and `derivedStateOf`) to limit unnecessary recompositions.
+- **Modularity:** Break your UI into small, reusable composable functions.
+- **Preview Frequently:** Take advantage of Android Studio’s Compose Preview to iterate quickly.
+- **Follow the Compose Patterns:** Leverage Material Design principles and Kotlin idioms to write clean, concise, and effective code.
